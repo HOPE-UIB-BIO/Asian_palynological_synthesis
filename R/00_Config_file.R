@@ -101,14 +101,14 @@ current_dir <- here::here()
 # get vector of general functions
 fun_list <-
   list.files(
-    path = "R/functions/",
+    path = "R/Functions/",
     pattern = "*.R",
     recursive = TRUE
   )
 
 # source them
 sapply(
-  paste0("R/functions/", fun_list, sep = ""),
+  paste0("R/Functions/", fun_list, sep = ""),
   source
 )
 
@@ -146,9 +146,3 @@ image_units <- "cm"
 # define pallets
 
 # define common color
-
-#----------------------------------------------------------#
-# 7. Save current config setting -----
-#----------------------------------------------------------#
-
-current_setting <- .extract.config.data()
