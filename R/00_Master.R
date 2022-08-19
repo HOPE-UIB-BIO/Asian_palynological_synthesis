@@ -1,13 +1,13 @@
 #----------------------------------------------------------#
 #
 #
-#                       Project name
+#              Asian palynological synthesis
 #
-#                       Master file
-#                 
+#                     Project setup
 #
-#                         Names 
-#                         Year
+#
+#                 K. Bhatta, O. Mottl
+#                         2022
 #
 #----------------------------------------------------------#
 
