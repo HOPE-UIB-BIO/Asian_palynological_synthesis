@@ -1,13 +1,13 @@
 #----------------------------------------------------------#
 #
 #
-#                       Project name
+#              Asian palynological synthesis
 #
-#        Source all code for data processing steps
-#                 
+#                     Project setup
 #
-#                         Names 
-#                         Year
+#
+#                 K. Bhatta, O. Mottl
+#                         2022
 #
 #----------------------------------------------------------#
 
@@ -18,8 +18,6 @@
 #----------------------------------------------------------#
 # 1. Set up run -----
 #----------------------------------------------------------#
-
-rm(list = ls())
 
 # Load configuration
 source("R/00_Config_file.R")

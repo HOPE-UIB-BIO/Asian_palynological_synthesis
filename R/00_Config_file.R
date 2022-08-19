@@ -1,17 +1,17 @@
 #----------------------------------------------------------#
 #
 #
-#                       Project name
+#              Asian palynological synthesis
 #
-#                       Config file
-#                 
+#                     Project setup
 #
-#                         Names 
-#                         Year
+#
+#                 K. Bhatta, O. Mottl
+#                         2022
 #
 #----------------------------------------------------------#
-# Configuration script with the variables that should be consistent throughout 
-#   the whole repo. It loads packages, defines important variables, 
+# Configuration script with the variables that should be consistent throughout
+#   the whole repo. It loads packages, defines important variables,
 #   authorises the user, and saves config file.
 
 
@@ -19,50 +19,65 @@
 # 1. Load packages -----
 #----------------------------------------------------------#
 
-if(!exists("update_repo_packages")){
+if (!exists("update_repo_packages")) {
   update_repo_packages <- TRUE
 }
 
-if(update_repo_packages == TRUE){
-  
-  # install fossilpol from github
-  if (!exists("already_installed_fossilpol")){
-    already_installed_fossilpol <- FALSE
+if (update_repo_packages == TRUE) {
+
+  # install RRatepol from github
+  if (!exists("already_installed_rratepol")) {
+    already_installed_ratepol <- FALSE
   }
-  
-  if(already_installed_fossilpol == FALSE){
-    devtools::install_github("HOPE-UIB-BIO/fossilpol",
-                             quiet = FALSE,
-                             upgrade = FALSE)
-    already_installed_fossilpol <- TRUE
+
+  if (already_installed_rratepol == FALSE) {
+    devtools::install_github("HOPE-UIB-BIO/R-Ratepol-package",
+      quiet = FALSE,
+      upgrade = FALSE
+    )
+    already_installed_rratepol <- TRUE
   }
-  
-  if (!exists("already_synch")){
+
+  # install REcopol from GitHub
+  if (!exists("already_installed_recopol")) {
+    already_installed_ratepol <- FALSE
+  }
+
+  if (already_installed_recopol == FALSE) {
+    devtools::install_github("HOPE-UIB-BIO/R-Ecopol-package",
+      quiet = FALSE,
+      upgrade = FALSE
+    )
+    already_installed_recopol <- TRUE
+  }
+
+  if (!exists("already_synch")) {
     already_synch <- FALSE
   }
-  
-  if(already_synch == FALSE){
+
+  if (already_synch == FALSE) {
     library(here)
     # synchronise the package versions
-    renv::restore(lockfile = here::here( "renv/library_list.lock"))
+    renv::restore(lockfile = here::here("renv/library_list.lock"))
     already_synch <- TRUE
-    
+
     # save snapshot of package versions
     # renv::snapshot(lockfile =  "renv/library_list.lock")  # do only for update
   }
 }
 
 # define packages
-package_list <- 
+package_list <-
   c(
     "assertthat",
     "devtools",
-    "fossilpol",
-    "here",      
-    "renv",       
-    "roxygen2",   
-    "tidyverse",  
-    "usethis"   
+    "here",
+    "REcopol",
+    "RRatepol",
+    "renv",
+    "roxygen2",
+    "tidyverse",
+    "usethis"
   )
 
 # load all packages
@@ -75,7 +90,7 @@ sapply(package_list, library, character.only = TRUE)
 
 current_date <- Sys.Date()
 
-# project directory is set up by 'here' package, Adjust if needed 
+# project directory is set up by 'here' package, Adjust if needed
 current_dir <- here::here()
 
 
@@ -84,16 +99,18 @@ current_dir <- here::here()
 #----------------------------------------------------------#
 
 # get vector of general functions
-fun_list <- 
+fun_list <-
   list.files(
     path = "R/Functions/",
     pattern = "*.R",
-    recursive = TRUE) 
+    recursive = TRUE
+  )
 
 # source them
 sapply(
-  paste0("R/functions/", fun_list, sep = ""),
-  source)
+  paste0("R/Functions/", fun_list, sep = ""),
+  source
+)
 
 
 #----------------------------------------------------------#
@@ -112,13 +129,14 @@ sapply(
 #----------------------------------------------------------#
 
 ## examples
-#set ggplot output
+# set ggplot output
 ggplot2::theme_set(
-  ggplot2::theme_classic())
+  ggplot2::theme_classic()
+)
 
 # define general
-text_size = 10
-line_size = 0.1
+text_size <- 10
+line_size <- 0.1
 
 # define output sizes
 image_width <- 16
@@ -128,9 +146,3 @@ image_units <- "cm"
 # define pallets
 
 # define common color
-
-#----------------------------------------------------------#
-# 7. Save current config setting -----
-#----------------------------------------------------------#
-
-current_setting <- .extract.config.data()

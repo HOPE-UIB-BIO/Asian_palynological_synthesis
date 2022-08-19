@@ -1,13 +1,13 @@
 #----------------------------------------------------------#
 #
 #
-#                     Project name
+#              Asian palynological synthesis
 #
 #                     Project setup
-#                 
 #
-#   O. Mottl, S. Flantua, K. Bhatta, V. Felde, A. Seddon 
-#                         2021
+#
+#                 K. Bhatta, O. Mottl
+#                         2022
 #
 #----------------------------------------------------------#
 
@@ -34,7 +34,7 @@ renv::deactivate()
 # Step 3: Create a list of packages
 #----------------------------------------------------------#
 
-package_list <- 
+package_list <-
   c(
     "assertthat",
     "devtools",
@@ -43,10 +43,10 @@ package_list <-
     "janitor",
     "jsonlite",
     "languageserver",
-    "renv",       
-    "roxygen2",   
-    "tidyverse",  
-    "usethis"   
+    "renv",
+    "roxygen2",
+    "tidyverse",
+    "usethis"
   )
 
 # define helper function
@@ -56,11 +56,16 @@ install_packages <-
     # install all packages in the lst from CRAN
     sapply(pkgs_list, utils::install.packages, character.only = TRUE)
 
-    # install RFossilpol from GitHub
-    # devtools::install_github(
-    #  "HOPE-UIB-BIO/R-Fossilpol-package",
-    #  quiet = FALSE,
-    #  upgrade = FALSE
+    # install RRatepol from GitHub
+    devtools::install_github("HOPE-UIB-BIO/R-Ratepol-package",
+      quiet = FALSE,
+      upgrade = FALSE
+    )
+
+    # install REcopol from GitHub
+    devtools::install_github("HOPE-UIB-BIO/R-Ecopol-package",
+      quiet = FALSE,
+      upgrade = FALSE
     )
   }
 
@@ -86,14 +91,13 @@ install_packages(package_list)
 
 
 #----------------------------------------------------------#
-# Step 7: Synchronize package versions with the project 
+# Step 7: Synchronize package versions with the project
 #----------------------------------------------------------#
 
 library(here)
 
 # if there is no lock file present make a new snapshot
-if
-(
+if (
   isFALSE("library_list.lock" %in% list.files(here::here("renv")))
 ) {
   renv::snapshot(lockfile = here::here("renv/library_list.lock"))
@@ -117,5 +121,5 @@ usethis::use_git_hook(
 )
 
 #----------------------------------------------------------#
-# Step 9: Run the project 
+# Step 9: Run the project
 #----------------------------------------------------------#

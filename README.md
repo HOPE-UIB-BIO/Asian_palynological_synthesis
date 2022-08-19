@@ -1,42 +1,12 @@
-# Template
-General HOPE structure for R project
-Developed by HOPE team Ondrej Mottl, Suzette Flantua, Vivian Felde, Kuber Bhatta
+# Asian palynological synthesis
+## Authors
+Kuber P. Bhatta, Ondřej Mottl, Vivian A. Felde, Suzette G.A. Flantua, Hilary H. Birks, Xianyong Cao, Fahu Chen, John-Arvid Grytnes, Alistair W. R. Seddon, H. John B. Birks
 
-# General info
-This template is a recommended structure for R projects which consists of modular codes with individual functions and purposes. A Master R code sources follow-up "Run" codes sourcing individual folders. The Config file is the single file where all variables, packages, criteria are defined. Operations are singled out in folders and R-codes.
+### Corresponding author
+Kuber P. Bhatta (kuber.bhatta@uib.no)
 
-
-
-# Default Main structure 
-## R - Outputs - Data
-## R
-* R / 01_Data_processing: Folder for data sourcing, cleaning, filtering, organizing
-* R / 02_Supplementary_analyses: Folder for data exploratory analyses, code to create temporal outputs
-* R / 03_Main_analyses: Folder where main analyses of project/paper are done
-* R / Functions: Each single R code represents an R function. See HOPE convention for suggestions for function descriptions
-* 00_Config_file
-* 00_Master
-
-## Outputs
-### Data - Figures - Tables
-
-## Data
-### Input - Processed
-
-
-
-# HOPE code convention
-Based on reviews of multiple sources of code conventions, HOPE designed a code convention where different recommendations are merged:
-https://docs.google.com/document/d/1MFYi-VLiBAMsFvaTd5Z9qkrXV8TxFzhXnzlkc1VjJ3g/edit?usp=sharing
-Examples are:
-* Each R code (with exception of the functions) comes with the same header with a short note on the aims of the specific .R
-* Use subheaders throughout the code
-* Comment consistently with good descriptions
-
-
-# Setup
-* The template comes two branches namely the "main" branch and the dev (development) branch. At the start these will be exactly the same. We recommend that you make a "dev" (development) branch and that you branch off the "dev" branch with your follow up branches and merge them to your "dev" branch until you are completely ready to merge to the main branch and your repo is close to done.
-* Config file is the master file in terms of setting all criteria used throughout the repo, loading the required packages and saving all settings throughout the repo.
-* To run this project for the first time, run line 24 of Config file.
-
-
+## Abstract
+Historical legacies play a significant role in influencing present-day ecosystem composition and dynamics, and it is thus important to understand the long-term dynamics of ecosystems and their properties. An exploratory analysis of major ecosystem properties during the Holocene using fossil pollen assemblages can provide valuable insights into past ecosystem dynamics by summarising ‘hidden’ features of the data, so-called pollen-assemblage properties – PAP. Here we quantify eight PAPs for the entire continent of Asia in terms of pollen-compositional turnover, pollen-compositional change, pollen-taxonomic richness, diversity (two measures), and evenness (two measures), and rate of pollen-compositional change (RoC). 
+We analysed 205 fossil pollen datasets throughout Asia using univariate and multivariate techniques to explore PAPs across space (patterns in individual datasets, along latitude and longitude, and within and between climate zones) and time (temporal patterns of PAP over past 12000 years). 
+Temporal compositional turnover and change reveal gradual spatial variation. Total temporal compositional turnover as revealed by detrended canonical correspondence analysis (DCCA) and compositional change (based on multivariate regression tree (MRT) partitions) of each dataset exhibit no or gradual curvilinear latitudinal patterns, whereas both generally decline with longitude. The only temporal pattern consistent across individual datasets as well as climate zones is temporal compositional turnover, which declines linearly from the onset of Holocene to the present. At the climate-zone level, percentages of MRT partitions per 1000-year time bin increase temporally, revealing an increase in compositional change from the onset of the Holocene to the mid-Holocene, and little change in the mid- to late-Holocene. Patterns of Hill’s diversity indices are heterogeneous across spatial scales. No consistent temporal pattern in RoC is observed at the dataset level, whereas at the climate-zone level a general pattern of declining RoC from the early- to mid-Holocene and a noticeable rise in RoC from the late mid-Holocene to the present is evident. Temporal patterns of major changes in PAPs (regression tree (RT) partitions of PAPs) are broadly consistent across spatial scales as well as across properties. The proportion of regression partitions increases from the early- to mid-Holocene for all PAPs, whereas only gradual temporal changes in the PAPs are observed from the mid-Holocene to the present.
+Observed spatio-temporal patterns in PAPs are most likely responses to variations in regional environmental conditions, anthropogenic land-use, and their interactions over space and time. However, the patterns may also be influenced by properties of the data, by the spatial distribution of the datasets, by uniformity in the temporal resolution of the samples within the datasets, by data-standardisation procedures, and by the approaches used to summarise PAP.  Therefore, it is critically important to explore in detail the above-mentioned data properties and the consequences of different approaches to data standardisation and summarisation in future broad-scale analyses of PAPs and their potential for addressing critical research questions or for testing alternative hypotheses.
