@@ -38,6 +38,7 @@ package_list <-
   c(
     "assertthat",
     "devtools",
+    "ggpubr",
     "here",
     "httpgd",
     "janitor",
