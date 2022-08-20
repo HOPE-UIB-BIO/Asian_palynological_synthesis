@@ -27,7 +27,7 @@ if (update_repo_packages == TRUE) {
 
   # install RRatepol from github
   if (!exists("already_installed_rratepol")) {
-    already_installed_ratepol <- FALSE
+    already_installed_rratepol <- FALSE
   }
 
   if (already_installed_rratepol == FALSE) {
@@ -40,7 +40,7 @@ if (update_repo_packages == TRUE) {
 
   # install REcopol from GitHub
   if (!exists("already_installed_recopol")) {
-    already_installed_ratepol <- FALSE
+    already_installed_recopol <- FALSE
   }
 
   if (already_installed_recopol == FALSE) {
@@ -71,12 +71,21 @@ package_list <-
   c(
     "assertthat",
     "devtools",
+    "dplyr",
+    "forcats",
+    "ggplot2",
+    "ggpubr",
     "here",
+    "mgcv",
+    "purrr",
+    "readr",
     "REcopol",
     "RRatepol",
     "renv",
     "roxygen2",
-    "tidyverse",
+    "stringr",
+    "tibble",
+    "tidyr",
     "usethis"
   )
 
