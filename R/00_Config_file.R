@@ -111,16 +111,21 @@ current_dir <- here::here()
 fun_list <-
   list.files(
     path = "R/Functions/",
-    pattern = "*.R",
+    pattern = ".R",
     recursive = TRUE
   )
 
 # source them
-sapply(
-  paste0("R/Functions/", fun_list, sep = ""),
-  source
-)
-
+if (
+  length(fun_list > 0)
+) {
+  sapply(
+    here::here(
+      paste0("R/Functions/", fun_list, sep = "")
+    ),
+    source
+  )
+}
 
 #----------------------------------------------------------#
 # 4. Authorise the user -----
