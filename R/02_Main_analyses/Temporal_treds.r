@@ -257,9 +257,9 @@ climate_zone_vec <-
 
 purrr::pwalk(
     .l = list(
-        vars_table$var_name, # ..1
-        vars_table$sel_error, # ..2
-        vars_table$sel_data # ..3
+      vars_table_ecozone$var_name, # ..1
+      vars_table_ecozone$sel_error, # ..2
+      vars_table_ecozone$sel_data # ..3
     ),
     .f = ~ {
         var_sel <- ..1
@@ -285,7 +285,10 @@ purrr::pwalk(
                         )
 
                     message(sel_ecozone)
-                    message(nrow(sel_data))
+                    sel_data$dataset_id %>%
+                      unique() %>%
+                      length() %>%
+                      message()
 
                     if (
                         nrow(sel_data) > 0
