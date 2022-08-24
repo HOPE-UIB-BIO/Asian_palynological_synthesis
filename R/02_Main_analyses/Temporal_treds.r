@@ -24,7 +24,8 @@ source(
     here::here("R/00_Config_file.R")
 )
 
-number_of_cores <- parallel::detectCores()
+# change to TRUE if you need to run all the models (takes time!)
+run_models <- FALSE
 
 #--------------------------------------------------------#
 # 2. Load the data of summary estimates ----
@@ -53,6 +54,65 @@ data_roc <-
 #--------------------------------------------------------#
 # 3. Plot the temporal trends in N0, N1, N2 DCCA1, MRT and RoC ----
 #--------------------------------------------------------#
+
+# Values for predicting trends
+age_vec <-
+    seq(0, 12e3, by = 100)
+
+# data for predicting
+new_data_general <-
+    tibble::tibble(
+        age = age_vec
+    )
+
+new_data_dataset <-
+    expand.grid(
+        age = age_vec,
+        unique(data_diversity$dataset_id)
+    ) %>%
+    tibble::as_tibble()
+
+# tables with names of variables, errors, and dataframes
+vars_table_indiv <-
+    tibble::tibble(
+        var_name = c(
+            "N0",
+            "N1",
+            "N2",
+            "DCCA1",
+            "N2_divided_by_N1",
+            "N1_divided_by_N0",
+            "roc"
+        ),
+        sel_error = c(
+            rep("mgcv::Tweedie(p = 1.9)", 4),
+            rep("mgcv::betar(link = 'logit')", 2),
+            "mgcv::Tweedie(p = 1.9)"
+        ),
+        sel_data = c(
+            rep("data_diversity", 6),
+            "data_roc"
+        )
+    )
+
+vars_table_ecozone <-
+    dplyr::bind_rows(
+        vars_table_indiv,
+        tibble::tibble(
+            var_name = c(
+                "proportion_of_zones",
+                "peak"
+            ),
+            sel_error = c(
+                "mgcv::betar(link = 'logit')",
+                "stats::binomial(link = 'logit')"
+            ),
+            sel_data = c(
+                "data_mrt_seq",
+                "data_peak_seq"
+            )
+        )
+    )
 
 # MRT partition estimates
 n_zones_per_seq <-
@@ -101,152 +161,13 @@ data_peak_seq <-
         age = BIN
     )
 
-
-age_vec <-
-    seq(0, 12e3, by = 100)
-
-# data for predicting
-new_data_general <-
-    tibble::tibble(
-        age = age_vec
-    )
-
-new_data_dataset <-
-    expand.grid(
-        age = age_vec,
-        unique(data_diversity$dataset_id)
-    ) %>%
-    tibble::as_tibble()
-
 #---------------------#
 # I Individual sequences
 #---------------------#
 
-# 3.1 Fit models -----
-
-vars_table_indiv <-
-    tibble::tibble(
-        var_name = c(
-            "N0",
-            "N1",
-            "N2",
-            "DCCA1",
-            "N2_divided_by_N1",
-            "N1_divided_by_N0",
-            "roc"
-        ),
-        sel_error = c(
-            rep("mgcv::Tweedie(p = 1.9)", 4),
-            rep("mgcv::betar(link = 'logit')", 2),
-            "mgcv::Tweedie(p = 1.9)"
-        ),
-        sel_data = c(
-            rep("data_diversity", 6),
-            "data_roc"
-        )
-    )
-
-vars_table_ecozone <-
-    dplyr::bind_rows(
-        vars_table_indiv,
-        tibble::tibble(
-            var_name = c(
-                "proportion_of_zones",
-                "peak"
-            ),
-            sel_error = c(
-                "mgcv::betar(link = 'logit')",
-                "stats::binomial(link = 'logit')"
-            ),
-            sel_data = c(
-                "data_mrt_seq",
-                "data_peak_seq"
-            )
-        )
-    )
-
-
-# IA - using multiple GAMs -----
-# pros - computationally easy, can use RRatepol
-# cons - no general error structure -> high outliers
-
-purrr::pmap_walk(
-    .l = list(
-        vars_table_indiv$var_name, # ..1
-        vars_table_indiv$sel_error, # ..2
-        vars_table_indiv$sel_data # ..3
-    ),
-    .f = ~ {
-        var_sel <- ..1
-        error_sel <- ..2
-        data_sel <- ..3
-
-        message(
-            paste("fitting", var_sel)
-        )
-
-        # Fit GAM model
-        data_mod <-
-            REcopol:::fit_multiple_gams(
-                data_source = get(data_sel),
-                x_var = "age",
-                y_var = var_sel,
-                group_var = "dataset_id",
-                smooth_basis = "tp",
-                error_family = error_sel,
-                max_k = 10
-            )
-
-        readr::write_rds(
-            x = data_mod,
-            file = paste0(
-                here::here(
-                    "Data/Processed/Models/Per_sequence/",
-                    "Individual_seq_mulitGAM"
-                ),
-                "/",
-                var_sel,
-                ".rds"
-            )
-        )
-    }
-)
-
-gam_pred_all <-
-    purrr::map_dfr(
-        .x = vars_table_indiv$var_name,
-        .f = ~ {
-            var_sel <- .x
-
-            data_mod <-
-                readr::read_rds(
-                    file = paste0(
-                        here::here(
-                            "Data/Processed/Models/Per_sequence/",
-                            "Individual_seq_mulitGAM"
-                        ),
-                        "/",
-                        var_sel,
-                        ".rds"
-                    )
-                )
-            # Predict the model
-            data_pred <-
-                marginaleffects::predictions(
-                    model = data_mod,
-                    newdata = new_data_dataset
-                ) %>%
-                tibble::as_tibble() %>%
-                dplyr::rename(
-                    !!var_sel := predicted
-                )
-        }
-    )
-
-
-# IB - using ecozone hGAM -----
+# IA - using ecozone hGAM -----
 # pros - error structure within ecozone -> fewer outliers (good prediction)
-# cons - computationally easier than continent (!)
+# cons - computationally more difucult. Inpose ecozone structure
 
 climate_zone_vec <-
     data_diversity %>%
@@ -255,82 +176,88 @@ climate_zone_vec <-
     sort() %>%
     rlang::set_names()
 
-purrr::pwalk(
-    .l = list(
-      vars_table_ecozone$var_name, # ..1
-      vars_table_ecozone$sel_error, # ..2
-      vars_table_ecozone$sel_data # ..3
-    ),
-    .f = ~ {
-        var_sel <- ..1
-        error_sel <- ..2
-        data_sel <- ..3
+if (
+    run_models == TRUE
+) {
+    purrr::pwalk(
+        .l = list(
+            vars_table_ecozone$var_name, # ..1
+            vars_table_ecozone$sel_error, # ..2
+            vars_table_ecozone$sel_data # ..3
+        ),
+        .f = ~ {
+            var_sel <- ..1
+            error_sel <- ..2
+            data_sel <- ..3
 
-        message(
-            paste("fitting", var_sel)
-        )
+            message(
+                paste("fitting", var_sel)
+            )
 
-        data_ecozone <-
-            purrr::map(
-                .x = climate_zone_vec,
-                .id = "Climate_zone",
-                .f = ~ {
-                    sel_ecozone <- .x
+            data_ecozone <-
+                purrr::map(
+                    .x = climate_zone_vec,
+                    .id = "Climate_zone",
+                    .f = ~ {
+                        sel_ecozone <- .x
 
-                    sel_data <-
-                        get(data_sel) %>%
-                        dplyr::filter(Climate_zone == sel_ecozone) %>%
-                        dplyr::mutate(
-                            dataset_id = as.factor(dataset_id)
-                        )
-
-                    message(sel_ecozone)
-                    sel_data$dataset_id %>%
-                      unique() %>%
-                      length() %>%
-                      message()
-
-                    if (
-                        nrow(sel_data) > 0
-                    ) {
-                        # Fit GAM model
-                        data_mod <-
-                            mgcv::bam(
-                                get(var_sel) ~
-                                    s(age,
-                                        by = dataset_id,
-                                        bs = "tp", m = 1
-                                    ) +
-                                    s(dataset_id,
-                                        bs = "re",
-                                        k = length(unique(sel_data$dataset_id))
-                                    ),
-                                family = error_sel,
-                                method = "fREML",
-                                data = sel_data,
-                                control = mgcv::gam.control(trace = TRUE)
+                        sel_data <-
+                            get(data_sel) %>%
+                            dplyr::filter(Climate_zone == sel_ecozone) %>%
+                            dplyr::mutate(
+                                dataset_id = as.factor(dataset_id)
                             )
 
-                        return(data_mod)
+                        message(sel_ecozone)
+                        sel_data$dataset_id %>%
+                            unique() %>%
+                            length() %>%
+                            message()
+
+                        if (
+                            nrow(sel_data) > 0
+                        ) {
+                            # Fit GAM model
+                            data_mod <-
+                                mgcv::bam(
+                                    get(var_sel) ~
+                                        s(age,
+                                            by = dataset_id,
+                                            bs = "tp", m = 1
+                                        ) +
+                                        s(dataset_id,
+                                            bs = "re",
+                                            k = length(
+                                                unique(sel_data$dataset_id)
+                                            )
+                                        ),
+                                    family = error_sel,
+                                    method = "fREML",
+                                    data = sel_data,
+                                    control = mgcv::gam.control(trace = TRUE)
+                                )
+
+                            return(data_mod)
+                        }
                     }
-                }
-            )
+                )
 
-        readr::write_rds(
-            x = data_ecozone,
-            file = paste0(
-                here::here(
-                    "Data/Processed/Models/Per_sequence/Individual_seq_hGAM"
-                ),
-                "/",
-                var_sel,
-                ".rds"
+            readr::write_rds(
+                x = data_ecozone,
+                file = paste0(
+                    here::here(
+                        "Data/Processed/Models/Per_sequence/Individual_seq_hGAM"
+                    ),
+                    "/",
+                    var_sel,
+                    ".rds"
+                )
             )
-        )
-    }
-)
+        }
+    )
+}
 
-gam_pred_all <-
+data_per_seq_pred <-
     purrr::map2_dfr(
         .x = vars_table_indiv$var_name,
         .y = vars_table$sel_data,
@@ -388,28 +315,126 @@ gam_pred_all <-
         }
     )
 
+# alternative method to fit the models
+# IB - using multiple GAMs -----
+# pros - computationally easy, can use RRatepol
+# cons - no general error structure -> high outliers
+if (
+    FALSE
+) {
+    if (
+        run_models == TRUE
+    ) {
+        purrr::pmap_walk(
+            .l = list(
+                vars_table_indiv$var_name, # ..1
+                vars_table_indiv$sel_error, # ..2
+                vars_table_indiv$sel_data # ..3
+            ),
+            .f = ~ {
+                var_sel <- ..1
+                error_sel <- ..2
+                data_sel <- ..3
+
+                message(
+                    paste("fitting", var_sel)
+                )
+
+                # Fit GAM model
+                data_mod <-
+                    REcopol:::fit_multiple_gams(
+                        data_source = get(data_sel),
+                        x_var = "age",
+                        y_var = var_sel,
+                        group_var = "dataset_id",
+                        smooth_basis = "tp",
+                        error_family = error_sel,
+                        max_k = 10
+                    )
+
+                readr::write_rds(
+                    x = data_mod,
+                    file = paste0(
+                        here::here(
+                            "Data/Processed/Models/Per_sequence/",
+                            "Individual_seq_mulitGAM"
+                        ),
+                        "/",
+                        var_sel,
+                        ".rds"
+                    )
+                )
+            }
+        )
+    }
+
+    data_per_seq_pred <-
+        purrr::map_dfr(
+            .x = vars_table_indiv$var_name,
+            .f = ~ {
+                var_sel <- .x
+
+                data_mod <-
+                    readr::read_rds(
+                        file = paste0(
+                            here::here(
+                                "Data/Processed/Models/Per_sequence/",
+                                "Individual_seq_mulitGAM"
+                            ),
+                            "/",
+                            var_sel,
+                            ".rds"
+                        )
+                    )
+                # Predict the model
+                data_pred <-
+                    marginaleffects::predictions(
+                        model = data_mod,
+                        newdata = new_data_dataset
+                    ) %>%
+                    tibble::as_tibble() %>%
+                    dplyr::rename(
+                        !!var_sel := predicted
+                    )
+            }
+        )
+}
+
 # 3.2 Plot results -----
 
 # Data for boxplot is binned at 1000 years
-boxplot_dat <-
-    gam_pred_all %>%
+data_per_seq_pred_boxplot <-
+    data_per_seq_pred %>%
     dplyr::filter(age %in% seq(0, 12e3, 1e3)) %>%
     group_by(dataset_id, age, sel_var)
 
+# TODO need to append peak and MTR here
+
 plot_sequence_boxplot <-
-    gam_pred_all %>%
+    data_per_seq_pred %>%
+    # Set desired order of the facets
     dplyr::mutate(
-        # Set desired order of facets
-        sel_var = factor(
-            sel_var,
+        var_name = dplyr::case_when(
+            var_name == "proportion_of_zones" ~ "MRT-zones proportion",
+            var_name == "peak" ~ "Peak-points present",
+            var_name == "N2_divided_by_N1" ~ "N2 divided by N1",
+            var_name == "N1_divided_by_N0" ~ "N1 divided by N0",
+            var_name == "roc" ~ "RoC",
+            TRUE ~ var_name
+        )
+    ) %>%
+    dplyr::mutate(
+        var_name = factor(var_name,
             levels = c(
                 "DCCA1",
+                "MRT-zones proportion",
                 "N0",
                 "N1",
                 "N2",
-                "N2_divided_by_N1",
-                "N1_divided_by_N0",
-                "roc"
+                "N2 divided by N1",
+                "N1 divided by N0",
+                "RoC",
+                "Peak-points present"
             )
         )
     ) %>%
@@ -428,7 +453,7 @@ plot_sequence_boxplot <-
     ) +
     ggplot2::geom_boxplot(
         ggplot2::aes(group = age),
-        data = boxplot_dat,
+        data = data_per_seq_pred_boxplot,
         col = "#993300", fill = "#993300",
         alpha = 0.5,
     ) +
@@ -461,12 +486,9 @@ plot_sequence_boxplot <-
 
 ggplot2::ggsave(
     plot_sequence_boxplot,
-    filename =
-        paste0(
-            "07.Outputs_EDA_041021/modified_zones/figures_revised_210622/",
-            "00.Diversity_estimates_composite_continent_no_bins_120822.tiff",
-            sep = ""
-        ),
+    filename = here::here(
+        "Outputs/Figures/Temporal_squences.tiff"
+    ),
     width = 18,
     height = 24,
     units = "cm",
@@ -478,7 +500,6 @@ ggplot2::ggsave(
 #---------------------#
 # II. Plots at the climate-zone scale
 #---------------------#
-
 
 # Fit GAM models for each variable with a single common smoother plus group-level
 #  smothers with diffring wiggliness (see Pedersen et al. 2019. Hierarchical
@@ -501,89 +522,88 @@ ggplot2::ggsave(
 #  in the the grouping variable. There are 5 climate zones, so k = 5.
 #------------------------------------------------------------------------------#
 
-climate_zone_vec <-
-    data_diversity %>%
-    purrr::pluck("Climate_zone") %>%
-    unique() %>%
-    sort() %>%
-    rlang::set_names()
+if (
+    run_models == TRUE
+) {
+    purrr::pwalk(
+        .l = list(
+            vars_table_ecozone$var_name, # ..1
+            vars_table_ecozone$sel_error, # ..2
+            vars_table_ecozone$sel_data # ..3
+        ),
+        .f = ~ {
+            var_sel <- ..1
+            error_sel <- ..2
+            data_sel <- ..3
 
-purrr::pwalk(
-    .l = list(
-        vars_table_ecozone$var_name, # ..1
-        vars_table_ecozone$sel_error, # ..2
-        vars_table_ecozone$sel_data # ..3
-    ),
-    .f = ~ {
-        var_sel <- ..1
-        error_sel <- ..2
-        data_sel <- ..3
+            message(
+                paste("fitting", var_sel)
+            )
 
-        message(
-            paste("fitting", var_sel)
-        )
+            data_ecozone <-
+                purrr::map(
+                    .x = climate_zone_vec,
+                    .f = ~ {
+                        sel_ecozone <- .x
 
-        data_ecozone <-
-            purrr::map(
-                .x = climate_zone_vec,
-                .f = ~ {
-                    sel_ecozone <- .x
-
-                    sel_data <-
-                        get(data_sel) %>%
-                        dplyr::filter(Climate_zone == sel_ecozone) %>%
-                        dplyr::mutate(
-                            dataset_id = as.factor(dataset_id)
-                        )
-
-                    message(sel_ecozone)
-                    sel_data$dataset_id %>%
-                        unique() %>%
-                        length() %>%
-                        message()
-
-                    if (
-                        nrow(sel_data) > 0
-                    ) {
-                        # Fit GAM model
-                        data_mod <-
-                            mgcv::bam(
-                                get(var_sel) ~
-                                    s(age, bs = "tp") +
-                                    s(age,
-                                        by = dataset_id,
-                                        bs = "tp", m = 1
-                                    ) +
-                                    s(dataset_id,
-                                        bs = "re",
-                                        k = length(unique(sel_data$dataset_id))
-                                    ),
-                                family = error_sel,
-                                method = "fREML",
-                                data = sel_data,
-                                control = mgcv::gam.control(trace = TRUE)
+                        sel_data <-
+                            get(data_sel) %>%
+                            dplyr::filter(Climate_zone == sel_ecozone) %>%
+                            dplyr::mutate(
+                                dataset_id = as.factor(dataset_id)
                             )
 
-                        return(data_mod)
+                        message(sel_ecozone)
+                        sel_data$dataset_id %>%
+                            unique() %>%
+                            length() %>%
+                            message()
+
+                        if (
+                            nrow(sel_data) > 0
+                        ) {
+                            # Fit GAM model
+                            data_mod <-
+                                mgcv::bam(
+                                    get(var_sel) ~
+                                        s(age, bs = "tp") +
+                                        s(age,
+                                            by = dataset_id,
+                                            bs = "tp", m = 1
+                                        ) +
+                                        s(dataset_id,
+                                            bs = "re",
+                                            k = length(
+                                                unique(sel_data$dataset_id)
+                                            )
+                                        ),
+                                    family = error_sel,
+                                    method = "fREML",
+                                    data = sel_data,
+                                    control = mgcv::gam.control(trace = TRUE)
+                                )
+
+                            return(data_mod)
+                        }
                     }
-                }
-            )
+                )
 
-        readr::write_rds(
-            x = data_ecozone,
-            file = paste0(
-                here::here(
-                    "Data/Processed/Models/Per_ecozone"
-                ),
-                "/",
-                var_sel,
-                ".rds"
+            readr::write_rds(
+                x = data_ecozone,
+                file = paste0(
+                    here::here(
+                        "Data/Processed/Models/Per_ecozone"
+                    ),
+                    "/",
+                    var_sel,
+                    ".rds"
+                )
             )
-        )
-    }
-)
+        }
+    )
+}
 
-gam_pred_ecozone <-
+data_per_ecozone_pred <-
     purrr::map2_dfr(
         .x = vars_table_ecozone$var_name,
         .y = vars_table_ecozone$sel_data,
@@ -627,7 +647,8 @@ gam_pred_ecozone <-
                                     dplyr::mutate(
                                         dataset_id = sel_data$dataset_id[1]
                                     ),
-                                exclude = gratia::smooths(data_mod[[sel_ecozone]]) %>%
+                                exclude = data_mod[[sel_ecozone]] %>%
+                                    gratia::smooths() %>%
                                     stringr::str_subset(., "dataset_id")
                             ) %>%
                             tibble::as_tibble() %>%
@@ -641,8 +662,8 @@ gam_pred_ecozone <-
         }
     )
 
-data_ecozone_pred <-
-    gam_pred_ecozone %>%
+data_per_ecozone_pred_restruct <-
+    data_per_ecozone_pred %>%
     dplyr::select(
         dplyr::any_of(
             c(
@@ -673,19 +694,19 @@ ecozone_pallete <-
         "#FF6600",
         "#3399FF",
         "#00CCCC"
-    )  %>% 
+    ) %>%
     rlang::set_names(
-        nm =   c(
-        "Arid",
-        "Cold_Dry",
-        "Cold_Without_dry_season",
-        "Polar",
-        "Temperate"
-    )
+        nm = c(
+            "Arid",
+            "Cold_Dry",
+            "Cold_Without_dry_season",
+            "Polar",
+            "Temperate"
+        )
     )
 
 plot_estimates_per_ecozone <-
-    data_ecozone_pred %>%
+    data_per_ecozone_pred_restruct %>%
     # Set desired order of the facets
     dplyr::mutate(
         var_name = dplyr::case_when(
