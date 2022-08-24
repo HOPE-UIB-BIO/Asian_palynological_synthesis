@@ -66,7 +66,7 @@ n_zones_per_seq <-
             length()
     )
 
-mrt_seq_data <-
+data_mrt_seq <-
     data_diversity %>%
     dplyr::select(Climate_zone, dataset_id, BIN, mrt_partiton) %>%
     dplyr::group_by(Climate_zone, dataset_id, BIN) %>%
@@ -83,6 +83,24 @@ mrt_seq_data <-
         proportion_of_zones = (zones_perbin / n_zones),
         age = BIN
     )
+
+# Peak points
+data_peak_seq <-
+    data_roc %>%
+    dplyr::mutate(
+        BIN = floor(age / 1e3) * 1e3
+    ) %>%
+    dplyr::select(Climate_zone, dataset_id, BIN, Peak) %>%
+    tidyr::drop_na() %>%
+    dplyr::group_by(Climate_zone, dataset_id, BIN) %>%
+    dplyr::summarise(
+        .groups = "drop",
+        peak = max(Peak),
+    ) %>%
+    dplyr::rename(
+        age = BIN
+    )
+
 
 age_vec <-
     seq(0, 12e3, by = 100)
@@ -132,9 +150,18 @@ vars_table_ecozone <-
     dplyr::bind_rows(
         vars_table_indiv,
         tibble::tibble(
-            var_name = "proportion_of_zones",
-            sel_error = "mgcv::betar(link = 'logit')",
-            sel_data = "mrt_seq_data",
+            var_name = c(
+                "proportion_of_zones",
+                "peak"
+            ),
+            sel_error = c(
+                "mgcv::betar(link = 'logit')",
+                "stats::binomial(link = 'logit')"
+            ),
+            sel_data = c(
+                "data_mrt_seq",
+                "data_peak_seq"
+            )
         )
     )
 
@@ -478,10 +505,6 @@ climate_zone_vec <-
     sort() %>%
     rlang::set_names()
 
-# var_sel <- vars_table_ecozone$var_name[[8]]
-# error_sel <- vars_table_ecozone$sel_error[[8]]
-# data_sel <- vars_table_ecozone$sel_data[[8]]
-
 purrr::pwalk(
     .l = list(
         vars_table_ecozone$var_name, # ..1
@@ -557,14 +580,15 @@ purrr::pwalk(
     }
 )
 
-
 gam_pred_ecozone <-
     purrr::map2_dfr(
-        .x = vars_table_indiv$var_name,
-        .y = vars_table$sel_data,
+        .x = vars_table_ecozone$var_name,
+        .y = vars_table_ecozone$sel_data,
         .f = ~ {
             var_sel <- .x
             data_sel <- .y
+
+            message(var_sel)
 
             data_mod <-
                 readr::read_rds(
@@ -600,7 +624,7 @@ gam_pred_ecozone <-
                                     dplyr::mutate(
                                         dataset_id = sel_data$dataset_id[1]
                                     ),
-                                exclude = gratia::smooths(data_mod) %>%
+                                exclude = gratia::smooths(data_mod[[sel_ecozone]]) %>%
                                     stringr::str_subset(., "dataset_id")
                             ) %>%
                             tibble::as_tibble() %>%
@@ -610,207 +634,151 @@ gam_pred_ecozone <-
                         return(data_pred)
                     }
                 )
+            return(data_ecozone)
         }
     )
 
-
-# END OF REVIEW !
+data_ecozone_pred <-
+    gam_pred_ecozone %>%
+    dplyr::select(
+        dplyr::any_of(
+            c(
+                "Climate_zone",
+                "age",
+                "conf.low",
+                "conf.high",
+                vars_table_ecozone$var_name
+            )
+        )
+    ) %>%
+    tidyr::pivot_longer(
+        cols = vars_table_ecozone$var_name,
+        names_to = "var_name",
+        values_to = "var"
+    ) %>%
+    tidyr::drop_na(var)
 
 
 # Plot the estimates
 
 # Assign unique colour to each climate zone
 
-req_pallete <-
+ecozone_pallete <-
     c(
         "#FFCC99",
         "#993300",
         "#FF6600",
         "#3399FF",
         "#00CCCC"
-    )
-
-names(req_pallete) <-
-    c(
+    )  %>% 
+    rlang::set_names(
+        nm =   c(
         "Arid",
         "Cold_Dry",
         "Cold_Without_dry_season",
         "Polar",
         "Temperate"
     )
-
-# Set desired order of the facets
-combined_mod$Variable <-
-    factor(combined_mod$Variable,
-        levels = c(
-            "DCCA1", "MRT_partition_percentage", "N0", "N1", "N2",
-            "N2_divided_by_N1", "N1_divided_by_N0", "RoC"
-        )
     )
 
-main_plot <-
-    combined_mod %>%
-    ggplot(aes(x = age, y = var)) +
-    geom_line(aes(
-        group = Climate_zone,
-        colour = Climate_zone
-    ),
-    size = 1
+plot_estimates_per_ecozone <-
+    data_ecozone_pred %>%
+    # Set desired order of the facets
+    dplyr::mutate(
+        var_name = dplyr::case_when(
+            var_name == "proportion_of_zones" ~ "MRT-zones proportion",
+            var_name == "peak" ~ "Peak-points present",
+            var_name == "N2_divided_by_N1" ~ "N2 divided by N1",
+            var_name == "N1_divided_by_N0" ~ "N1 divided by N0",
+            var_name == "roc" ~ "RoC",
+            TRUE ~ var_name
+        )
+    ) %>%
+    dplyr::mutate(
+        var_name = factor(var_name,
+            levels = c(
+                "DCCA1",
+                "MRT-zones proportion",
+                "N0",
+                "N1",
+                "N2",
+                "N2 divided by N1",
+                "N1 divided by N0",
+                "RoC",
+                "Peak-points present"
+            )
+        )
+    ) %>%
+    ggplot2::ggplot(
+        ggplot2::aes(
+            x = age,
+            y = var
+        )
     ) +
-    theme_classic() +
-    facet_wrap(~Variable, ncol = 2, scales = "free_y") +
-    labs(
+    ggplot2::geom_line(
+        ggplot2::aes(
+            group = Climate_zone,
+            colour = Climate_zone
+        ),
+        size = 1
+    ) +
+    ggplot2::theme_classic() +
+    ggplot2::facet_wrap(
+        ~var_name,
+        ncol = 2,
+        scales = "free_y"
+    ) +
+    ggplot2::labs(
         x = "Time (yr BP)",
-        y = "Estimate/1000 yr"
+        y = "Estimate"
     ) +
-    scale_fill_manual(values = req_pallete) +
-    scale_color_manual(values = req_pallete) +
-    theme(
-        strip.text.x = element_text(size = 14),
-        plot.title = element_text(color = "black", size = 18),
-        axis.text.x = element_text(
+    ggplot2::scale_fill_manual(values = ecozone_pallete) +
+    ggplot2::scale_color_manual(values = ecozone_pallete) +
+    ggplot2::theme(
+        strip.text.x = ggplot2::element_text(size = 14),
+        plot.title = ggplot2::element_text(
+            color = "black",
+            size = 18
+        ),
+        axis.text.x = ggplot2::element_text(
             color = "black",
             size = 16,
             angle = 45,
             hjust = 1
         ),
-        axis.text.y = element_text(color = "black", size = 16),
-        axis.title = element_text(color = "black", size = 18),
+        axis.text.y = ggplot2::element_text(
+            color = "black",
+            size = 16
+        ),
+        axis.title = ggplot2::element_text(
+            color = "black",
+            size = 18
+        ),
         legend.position = "bottom",
         legend.key.size = unit(0.75, "cm"),
-        legend.title = element_text(size = 14),
-        axis.title.x = element_text(margin = margin(t = 0, r = 0, b = 0, l = 0)),
-        legend.text = element_text(size = 11)
+        legend.title = ggplot2::element_text(size = 14),
+        axis.title.x = ggplot2::element_text(
+            margin = ggplot2::margin(t = 0, r = 0, b = 0, l = 0)
+        ),
+        legend.text = ggplot2::element_text(size = 11)
     ) +
-    guides(colour = guide_legend(
-        title.position = "top",
-        nrow = 1,
-        byrow = TRUE
-    ))
+    ggplot2::guides(
+        colour = ggplot2::guide_legend(
+            title.position = "top",
+            nrow = 1,
+            byrow = TRUE
+        )
+    )
 
-
-ggsave(
-    main_plot,
+ggplot2::ggsave(
+    plot_estimates_per_ecozone,
     filename =
-        paste0(
-            "07.Outputs_EDA_041021/modified_zones/figures_revised_210622/",
-            "00.Diversity_estimates_composite_perzone_240422.tiff",
-            sep = ""
+        here::here(
+            "Outputs/Figures/Temporal_ecozone.tiff"
         ),
     width = 18,
     height = 24,
     units = "cm",
     dpi = 400,
-    compress = "lzw"
-)
-
-
-
-#--------------------------------------------------------#
-# 4. Plot the temporal trends in RoC peaks ----
-#--------------------------------------------------------#
-# Detect the BINs with significant peak points for each dataset.
-# Within each BIN, determine the number of datasets with at least one peak.
-# Plot as histogram
-
-# 4a. At continent level
-roc_peak_continent <-
-    dat_roc %>%
-    dplyr::select(dataset_id,
-        climate_zone = Climate_zone, BIN, age = Age,
-        roc = ROC, peak = Peak
-    ) %>%
-    dplyr::mutate(peak = ifelse(peak == FALSE, 0, 1)) %>%
-    arrange(dataset_id) %>%
-    group_by(dataset_id, BIN) %>%
-    summarise(.groups = "keep", peak_per_bin = sum(peak)) %>%
-    ungroup() %>%
-    dplyr::mutate(peak_presence = ifelse(peak_per_bin > 1, 1, peak_per_bin)) %>%
-    group_by(BIN) %>%
-    summarise(.groups = "keep", peak_counts = sum(peak_presence)) %>%
-    dplyr::mutate(climate_zone = paste("Whole_continent"))
-
-
-
-# 4b. At climate-zone level
-roc_peak_climate_zone <-
-    dat_roc %>%
-    dplyr::select(dataset_id,
-        climate_zone = Climate_zone, BIN, age = Age,
-        roc = ROC, peak = Peak
-    ) %>%
-    dplyr::mutate(peak = ifelse(peak == FALSE, 0, 1)) %>%
-    arrange(dataset_id) %>%
-    group_by(dataset_id, BIN, climate_zone) %>%
-    summarise(.groups = "keep", peak_per_bin = sum(peak)) %>%
-    ungroup() %>%
-    dplyr::mutate(peak_presence = ifelse(peak_per_bin > 1, 1, peak_per_bin)) %>%
-    group_by(climate_zone, BIN) %>%
-    summarise(.groups = "keep", peak_counts = sum(peak_presence))
-
-
-req_pallete <-
-    c(
-        "#FFCC99",
-        "#993300",
-        "#FF6600",
-        "#3399FF",
-        "#00CCCC",
-        "#339999"
-    )
-
-names(cbPalette1) <-
-    c(
-        "Arid",
-        "Cold_Dry",
-        "Cold_Without_dry_season",
-        "Polar",
-        "Temperate",
-        "Whole_continent"
-    )
-
-
-dat_to_plot <-
-    bind_rows(roc_peak_climate_zone, roc_peak_continent) %>%
-    ggplot(aes(
-        x = BIN, y = peak_counts,
-        group = as_factor(climate_zone)
-    )) +
-    geom_bar(aes(fill = climate_zone),
-        stat = "identity",
-        position = "identity"
-    ) +
-    theme_classic() +
-    scale_fill_manual(values = req_pallete) +
-    facet_wrap(~climate_zone, ncol = 2, scales = "free_y") +
-    labs(
-        x = "Time (yr BP)",
-        y = "Number of daasets with at least one peak in a time-bin",
-        title = "No. of datasets with at least one peak in a BIN"
-    ) +
-    theme(
-        strip.text.x = element_text(size = 14),
-        axis.text.x = element_text(
-            color = "black", size = 13,
-            angle = 45, hjust = 1
-        ),
-        axis.text.y = element_text(color = "black", size = 13),
-        axis.title = element_text(color = "black", size = 16),
-        plot.title = element_text(color = "black", size = 16),
-        legend.position = "none"
-    )
-
-ggsave(
-    dat_to_plot,
-    filename =
-        paste(
-            "07.Outputs_EDA_041021/modified_zones/figures_revised_210622/",
-            "RoC_peaks.tiff",
-            sep = ""
-        ),
-    width = 16,
-    height = 24,
-    units = "cm",
-    dpi = 200,
     compress = "lzw"
 )
