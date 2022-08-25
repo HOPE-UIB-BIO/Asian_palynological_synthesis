@@ -52,7 +52,7 @@ data_roc <-
     )
 
 #--------------------------------------------------------#
-# 3. Plot the temporal trends in N0, N1, N2 DCCA1, MRT and RoC ----
+# 3. Plot the temporal trends of individual sequence ----
 #--------------------------------------------------------#
 
 # Values for predicting trends
@@ -144,6 +144,11 @@ data_mrt_seq <-
         age = BIN
     )
 
+readr::write_rds(
+    data_mrt_seq,
+    here::here("Data/Processed/mrt_per_seq.rds")
+)
+
 # Peak points
 data_peak_seq <-
     data_roc %>%
@@ -161,11 +166,16 @@ data_peak_seq <-
         age = BIN
     )
 
+readr::write_rds(
+    data_peak_seq,
+    here::here("Data/Processed/peak_points_per_seq.rds")
+)
+
 #---------------------#
-# I Individual sequences
+# 3.1 fit the models -----
 #---------------------#
 
-# IA - using ecozone hGAM -----
+# 3.1.A - using ecozone hGAM -----
 # pros - error structure within ecozone -> fewer outliers (good prediction)
 # cons - computationally more difucult. Inpose ecozone structure
 
@@ -260,7 +270,7 @@ if (
 data_per_seq_pred <-
     purrr::map2_dfr(
         .x = vars_table_indiv$var_name,
-        .y = vars_table$sel_data,
+        .y = vars_table_indiv$sel_data,
         .f = ~ {
             var_sel <- .x
             data_sel <- .y
@@ -278,12 +288,16 @@ data_per_seq_pred <-
                     )
                 )
 
+            message(var_sel)
+
             data_ecozone <-
                 purrr::map_dfr(
                     .x = climate_zone_vec,
                     .id = "Climate_zone",
                     .f = ~ {
                         sel_ecozone <- .x
+
+                        message(sel_ecozone)
 
                         sel_data <-
                             get(data_sel) %>%
@@ -316,7 +330,7 @@ data_per_seq_pred <-
     )
 
 # alternative method to fit the models
-# IB - using multiple GAMs -----
+# 3.1.B - using multiple GAMs -----
 # pros - computationally easy, can use RRatepol
 # cons - no general error structure -> high outliers
 if (
@@ -400,44 +414,100 @@ if (
         )
 }
 
-# 3.2 Plot results -----
-
-# Data for boxplot is binned at 1000 years
-data_per_seq_pred_boxplot <-
+data_per_seq_pred_restruct <-
     data_per_seq_pred %>%
-    dplyr::filter(age %in% seq(0, 12e3, 1e3)) %>%
-    group_by(dataset_id, age, sel_var)
-
-# TODO need to append peak and MTR here
-
-plot_sequence_boxplot <-
-    data_per_seq_pred %>%
+    dplyr::select(
+        dplyr::any_of(
+            c(
+                "Climate_zone",
+                "dataset_id",
+                "age",
+                "conf.low",
+                "conf.high",
+                vars_table_indiv$var_name
+            )
+        )
+    ) %>%
+    tidyr::pivot_longer(
+        cols = vars_table_indiv$var_name,
+        names_to = "var_name",
+        values_to = "var"
+    ) %>%
+    tidyr::drop_na(var) %>%
+    dplyr::filter(
+        !(var_name == "roc" & var > 1.5)
+    ) %>%
+    dplyr::filter(
+        !(var_name == "DCCA1" & var > 2)
+    ) %>%
+    dplyr::filter(
+        !(var_name == "N1" & var > 20)
+    ) %>%
     # Set desired order of the facets
     dplyr::mutate(
         var_name = dplyr::case_when(
-            var_name == "proportion_of_zones" ~ "MRT-zones proportion",
-            var_name == "peak" ~ "Peak-points present",
             var_name == "N2_divided_by_N1" ~ "N2 divided by N1",
             var_name == "N1_divided_by_N0" ~ "N1 divided by N0",
             var_name == "roc" ~ "RoC",
             TRUE ~ var_name
         )
+    )
+
+#---------------------#
+# 3.2 Plot results -----
+#---------------------#
+
+# Data for boxplot is binned at 1000 years
+data_per_seq_pred_boxplot <-
+    data_per_seq_pred_restruct %>%
+    dplyr::filter(age %in% seq(0, 12e3, 1e3)) %>%
+    dplyr::bind_rows(
+        data_peak_seq %>%
+            dplyr::select(
+                Climate_zone, dataset_id, age,
+                var = peak
+            ) %>%
+            dplyr::mutate(
+                var_name = "Peak-points proportion"
+            )
+    ) %>%
+    dplyr::bind_rows(
+        data_mrt_seq %>%
+            dplyr::select(
+                Climate_zone, dataset_id, age,
+                var = proportion_of_zones
+            ) %>%
+            dplyr::mutate(
+                var_name = "MRT-zones proportion"
+            )
     ) %>%
     dplyr::mutate(
         var_name = factor(var_name,
             levels = c(
                 "DCCA1",
-                "MRT-zones proportion",
                 "N0",
                 "N1",
                 "N2",
                 "N2 divided by N1",
                 "N1 divided by N0",
                 "RoC",
-                "Peak-points present"
+                "Peak-points proportion",
+                "MRT-zones proportion"
             )
         )
-    ) %>%
+    )
+
+data_per_seq_boxplot_median <-
+    data_per_seq_pred_boxplot %>%
+    dplyr::group_by(var_name, age) %>%
+    dplyr::summarise(
+        .groups = "drop",
+        var_median = median(var)
+    )
+
+
+plot_sequence_boxplot <-
+    data_per_seq_pred_boxplot %>%
     ggplot2::ggplot(
         ggplot2::aes(
             x = age,
@@ -445,26 +515,58 @@ plot_sequence_boxplot <-
         )
     ) +
     ggplot2::geom_line(
+        data = data_per_seq_pred_restruct %>%
+            dplyr::mutate(
+                var_name = factor(var_name,
+                    levels = c(
+                        "DCCA1",
+                        "N0",
+                        "N1",
+                        "N2",
+                        "N2 divided by N1",
+                        "N1 divided by N0",
+                        "RoC",
+                        "Peak-points proportion",
+                        "MRT-zones proportion"
+                    )
+                )
+            ),
         ggplot2::aes(
             group = dataset_id
         ),
         color = "#2CA388",
         alpha = 0.4
     ) +
-    ggplot2::geom_boxplot(
+    ggplot2::geom_violin(
         ggplot2::aes(group = age),
-        data = data_per_seq_pred_boxplot,
-        col = "#993300", fill = "#993300",
+        col = NA,
+        fill = "#993300",
         alpha = 0.5,
     ) +
+    ggplot2::geom_boxplot(
+        ggplot2::aes(group = age),
+        col = "black",
+        fill = "white",
+        alpha = 1,
+        width = 250,
+        outlier.shape = NA
+    ) +
+    ggplot2::geom_line(
+        data = data_per_seq_boxplot_median,
+        ggplot2::aes(
+            y = var_median
+        ),
+        size = 1,
+        color = "black"
+    ) +
     ggplot2::facet_wrap(
-        ~sel_var,
+        ~var_name,
         scales = "free_y",
-        nrow = 4
+        ncol = 2
     ) +
     ggplot2::theme_classic() +
     ggplot2::ggtitle(
-        "Temporal diversity trends (without binning the estimates)"
+        "Temporal diversity trends"
     ) +
     ggplot2::labs(
         x = "Time (yr BP)",
@@ -496,10 +598,9 @@ ggplot2::ggsave(
     compression = "lzw"
 )
 
-
-#---------------------#
-# II. Plots at the climate-zone scale
-#---------------------#
+#--------------------------------------------------------#
+# 4. Plot the temporal trends of climate-zone ----
+#--------------------------------------------------------#
 
 # Fit GAM models for each variable with a single common smoother plus group-level
 #  smothers with diffring wiggliness (see Pedersen et al. 2019. Hierarchical
@@ -521,6 +622,10 @@ ggplot2::ggsave(
 # 4. In the factorial random effect smoother (bs="re"), 'k' equals number of levels
 #  in the the grouping variable. There are 5 climate zones, so k = 5.
 #------------------------------------------------------------------------------#
+
+#---------------------#
+# 4.1 fit the models -----
+#---------------------#
 
 if (
     run_models == TRUE
@@ -683,8 +788,9 @@ data_per_ecozone_pred_restruct <-
     tidyr::drop_na(var)
 
 
-# Plot the estimates
-
+#---------------------#
+# 4.2 Plot the results -----
+#---------------------#
 # Assign unique colour to each climate zone
 
 ecozone_pallete <-
@@ -711,7 +817,7 @@ plot_estimates_per_ecozone <-
     dplyr::mutate(
         var_name = dplyr::case_when(
             var_name == "proportion_of_zones" ~ "MRT-zones proportion",
-            var_name == "peak" ~ "Peak-points present",
+            var_name == "peak" ~ "Peak-points proportion",
             var_name == "N2_divided_by_N1" ~ "N2 divided by N1",
             var_name == "N1_divided_by_N0" ~ "N1 divided by N0",
             var_name == "roc" ~ "RoC",
@@ -722,14 +828,14 @@ plot_estimates_per_ecozone <-
         var_name = factor(var_name,
             levels = c(
                 "DCCA1",
-                "MRT-zones proportion",
                 "N0",
                 "N1",
                 "N2",
                 "N2 divided by N1",
                 "N1 divided by N0",
                 "RoC",
-                "Peak-points present"
+                "Peak-points proportion",
+                "MRT-zones proportion"
             )
         )
     ) %>%
@@ -738,6 +844,15 @@ plot_estimates_per_ecozone <-
             x = age,
             y = var
         )
+    ) +
+    ggplot2::geom_ribbon(
+        ggplot2::aes(
+            ymin = conf.low,
+            ymax = conf.high,
+            fill = Climate_zone,
+        ),
+        colour = NA,
+        alpha = 0.1
     ) +
     ggplot2::geom_line(
         ggplot2::aes(
