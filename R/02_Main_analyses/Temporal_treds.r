@@ -85,9 +85,9 @@ vars_table_indiv <-
             "roc"
         ),
         sel_error = c(
-            rep("mgcv::Tweedie(p = 1.9)", 4),
+            rep("mgcv::Tweedie(p = 1.1)", 4),
             rep("mgcv::betar(link = 'logit')", 2),
-            "mgcv::Tweedie(p = 1.9)"
+            "mgcv::Tweedie(p = 1.1)"
         ),
         sel_data = c(
             rep("data_diversity", 6),
@@ -171,6 +171,8 @@ readr::write_rds(
     here::here("Data/Processed/peak_points_per_seq.rds")
 )
 
+
+
 #---------------------#
 # 3.1 fit the models -----
 #---------------------#
@@ -229,22 +231,17 @@ if (
                         ) {
                             # Fit GAM model
                             data_mod <-
-                                mgcv::bam(
-                                    get(var_sel) ~
-                                        s(age,
-                                            by = dataset_id,
-                                            bs = "tp", m = 1
-                                        ) +
-                                        s(dataset_id,
-                                            bs = "re",
-                                            k = length(
-                                                unique(sel_data$dataset_id)
-                                            )
-                                        ),
-                                    family = error_sel,
-                                    method = "fREML",
-                                    data = sel_data,
-                                    control = mgcv::gam.control(trace = TRUE)
+                                REcopol::fit_hgam(
+                                    x_var = "age",
+                                    y_var = var_sel,
+                                    group_var = "dataset_id",
+                                    smooth_basis = "tp",
+                                    data_source = sel_data,
+                                    error_family = error_sel,
+                                    sel_k = 10,
+                                    common_trend = FALSE,
+                                    use_parallel = FALSE,
+                                    max_itiration = 200
                                 )
 
                             return(data_mod)
@@ -315,14 +312,14 @@ data_per_seq_pred <-
 
                         # Predict the model
                         data_pred <-
-                            marginaleffects::predictions(
-                                model = data_mod[[sel_ecozone]],
-                                newdata = new_data_ecozone
+                            REcopol::predic_model(
+                                model_source = data_mod[[sel_ecozone]],
+                                data_source = new_data_ecozone
                             ) %>%
-                            tibble::as_tibble() %>%
                             dplyr::rename(
-                                !!var_sel := predicted
+                                !!var_sel := fit
                             )
+
                         return(data_pred)
                     }
                 )
@@ -334,6 +331,7 @@ data_per_seq_pred <-
 # pros - computationally easy, can use RRatepol
 # cons - no general error structure -> high outliers
 if (
+    # it is turn off by default
     FALSE
 ) {
     if (
@@ -402,13 +400,12 @@ if (
                     )
                 # Predict the model
                 data_pred <-
-                    marginaleffects::predictions(
-                        model = data_mod,
-                        newdata = new_data_dataset
+                    REcopol::predic_model(
+                        model_source = data_mod,
+                        data_source = new_data_dataset
                     ) %>%
-                    tibble::as_tibble() %>%
                     dplyr::rename(
-                        !!var_sel := predicted
+                        !!var_sel := fit
                     )
             }
         )
@@ -669,23 +666,17 @@ if (
                         ) {
                             # Fit GAM model
                             data_mod <-
-                                mgcv::bam(
-                                    get(var_sel) ~
-                                        s(age, bs = "tp") +
-                                        s(age,
-                                            by = dataset_id,
-                                            bs = "tp", m = 1
-                                        ) +
-                                        s(dataset_id,
-                                            bs = "re",
-                                            k = length(
-                                                unique(sel_data$dataset_id)
-                                            )
-                                        ),
-                                    family = error_sel,
-                                    method = "fREML",
-                                    data = sel_data,
-                                    control = mgcv::gam.control(trace = TRUE)
+                                REcopol::fit_hgam(
+                                    x_var = "age",
+                                    y_var = var_sel,
+                                    group_var = "dataset_id",
+                                    smooth_basis = "tp",
+                                    data_source = sel_data,
+                                    error_family = error_sel,
+                                    sel_k = 10,
+                                    common_trend = TRUE,
+                                    use_parallel = FALSE,
+                                    max_itiration = 200
                                 )
 
                             return(data_mod)
@@ -746,9 +737,9 @@ data_per_ecozone_pred <-
 
                         # Predict the models
                         data_pred <-
-                            marginaleffects::predictions(
-                                model = data_mod[[sel_ecozone]],
-                                newdata = new_data_general %>%
+                            REcopol::predic_model(
+                                model_source = data_mod[[sel_ecozone]],
+                                data_source = new_data_general %>%
                                     dplyr::mutate(
                                         dataset_id = sel_data$dataset_id[1]
                                     ),
@@ -756,10 +747,10 @@ data_per_ecozone_pred <-
                                     gratia::smooths() %>%
                                     stringr::str_subset(., "dataset_id")
                             ) %>%
-                            tibble::as_tibble() %>%
                             dplyr::rename(
-                                !!var_sel := predicted
+                                !!var_sel := fit
                             )
+
                         return(data_pred)
                     }
                 )
