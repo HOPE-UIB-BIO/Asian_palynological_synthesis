@@ -61,9 +61,6 @@ koppen_tranlation_table <-
         here::here("Data/Input/Biomes_spatial//koppen_link.csv")
     )
 
-library(rgdal)
-library(raster)
-
 # Extract the required raster points
 
 raster_df <-
@@ -110,24 +107,20 @@ cbPalette1 <-
         "#99CC00",
         "#006600",
         "#996600"
+    ) %>%
+    rlang::set_names(
+        nm = c(
+            "Arid",
+            "Cold_Dry",
+            "Cold_Without_dry_season",
+            "Polar",
+            "Polar_Frost",
+            "Temperate",
+            "Tropical_Monsoon",
+            "Tropical_Rainforest",
+            "Tropical_Savannah"
+        )
     )
-
-names(cbPalette1) <-
-    c(
-        "Arid",
-        "Cold_Dry",
-        "Cold_Without_dry_season",
-        "Polar",
-        "Polar_Frost",
-        "Temperate",
-        "Tropical_Monsoon",
-        "Tropical_Rainforest",
-        "Tropical_Savannah"
-    )
-
-
-
-library(ggside)
 
 if (
     FALSE
@@ -151,8 +144,6 @@ if (
             xmax = 173
         )
 }
-
-
 
 # Base map (modified climate zones)
 base_map <-
@@ -232,7 +223,7 @@ plot_dcca <-
         var_name = "DCCA1",
         lab_name = "DCCA1",
         plot_title = "Compositional turnover (DCCA axis 1)",
-        error_family = "mgcv::Tweedie(p = 1.9)",
+        error_family = "mgcv::Tweedie(p = 1.1, link = 'log')",
         side_scale_ratio = 0.25
     )
 
@@ -274,8 +265,6 @@ ggplot2::ggsave(
 #--------------------------------------------------------#
 # E.Sequences per ecozone ----
 #--------------------------------------------------------#
-# Sys.setlocale("LC_ALL", "German") # To paste special characters in ggplot properly
-# options(encoding = "UTF-8")
 
 pallete2 <-
     cbPalette1[
