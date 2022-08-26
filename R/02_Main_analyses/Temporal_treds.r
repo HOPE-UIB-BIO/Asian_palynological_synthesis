@@ -72,6 +72,25 @@ new_data_dataset <-
     ) %>%
     tibble::as_tibble()
 
+# length of each sequences
+data_sequence_length <-
+    data_diversity %>%
+    dplyr::group_by(dataset_id) %>%
+    dplyr::summarise(
+        age_min = min(age),
+        age_max = max(age)
+    ) %>%
+    add_age_bin(
+        .,
+        age_var_name = "age_min",
+        bin_var_name = "BIN_min"
+    ) %>%
+    add_age_bin(
+        .,
+        age_var_name = "age_max",
+        bin_var_name = "BIN_max"
+    )
+
 # tables with names of variables, errors, and dataframes
 vars_table_indiv <-
     tibble::tibble(
@@ -152,9 +171,7 @@ readr::write_rds(
 # Peak points
 data_peak_seq <-
     data_roc %>%
-    dplyr::mutate(
-        BIN = floor(age / 1e3) * 1e3
-    ) %>%
+    add_age_bin(., bin_size = 1e3) %>%
     dplyr::select(Climate_zone, dataset_id, BIN, Peak) %>%
     tidyr::drop_na() %>%
     dplyr::group_by(Climate_zone, dataset_id, BIN) %>%
@@ -411,6 +428,11 @@ if (
         )
 }
 
+# restructure the data so all values are in one column and there is a column
+#   with the name of the variable
+# Filter out prediction! Keep only those prediction which is in the same time
+#   bin as the data (do not predict more than 1000 years away form data).
+#   In addtion, filer out all prediction with too high uncertaity (sd > 2)
 data_per_seq_pred_restruct <-
     data_per_seq_pred %>%
     dplyr::select(
@@ -419,8 +441,9 @@ data_per_seq_pred_restruct <-
                 "Climate_zone",
                 "dataset_id",
                 "age",
-                "conf.low",
-                "conf.high",
+                "sd_error",
+                "lwr",
+                "upr",
                 vars_table_indiv$var_name
             )
         )
@@ -431,15 +454,29 @@ data_per_seq_pred_restruct <-
         values_to = "var"
     ) %>%
     tidyr::drop_na(var) %>%
-    dplyr::filter(
-        !(var_name == "roc" & var > 1.5)
+    # remove the high uncertainty
+    dplyr::filter(sd_error < 2)  %>% 
+    add_age_bin(, bin_size = 1e3) %>%
+    tidyr::nest(
+        data = c(age, BIN, lwr, upr, sd_error, var_name, var)
     ) %>%
-    dplyr::filter(
-        !(var_name == "DCCA1" & var > 2)
+    dplyr::left_join(
+        data_sequence_length,
+        by = "dataset_id"
     ) %>%
-    dplyr::filter(
-        !(var_name == "N1" & var > 20)
+    dplyr::mutate(
+        data_filtered = purrr::pmap(
+            .l = list(data, BIN_min, BIN_max),
+            .f = ~ ..1 %>%
+                dplyr::filter(
+                    BIN >= ..2 & BIN <= ..3
+                )
+        )
     ) %>%
+    dplyr::select(
+        Climate_zone, dataset_id, data_filtered
+    ) %>%
+    tidyr::unnest(data_filtered) %>%
     # Set desired order of the facets
     dplyr::mutate(
         var_name = dplyr::case_when(
@@ -457,7 +494,11 @@ data_per_seq_pred_restruct <-
 # Data for boxplot is binned at 1000 years
 data_per_seq_pred_boxplot <-
     data_per_seq_pred_restruct %>%
-    dplyr::filter(age %in% seq(0, 12e3, 1e3)) %>%
+    dplyr::group_by(dataset_id, var_name, BIN)  %>% 
+    dplyr::summarise(
+        .groups = "drop",
+        var = mean(var)
+    )
     dplyr::bind_rows(
         data_peak_seq %>%
             dplyr::select(
@@ -496,7 +537,7 @@ data_per_seq_pred_boxplot <-
 
 data_per_seq_boxplot_median <-
     data_per_seq_pred_boxplot %>%
-    dplyr::group_by(var_name, age) %>%
+    dplyr::group_by(var_name, BIN) %>%
     dplyr::summarise(
         .groups = "drop",
         var_median = median(var)
@@ -507,7 +548,7 @@ plot_sequence_boxplot <-
     data_per_seq_pred_boxplot %>%
     ggplot2::ggplot(
         ggplot2::aes(
-            x = age,
+            x = BIN,
             y = var
         )
     ) +
@@ -529,19 +570,20 @@ plot_sequence_boxplot <-
                 )
             ),
         ggplot2::aes(
+            x = age,
             group = dataset_id
         ),
         color = "#2CA388",
         alpha = 0.4
     ) +
     ggplot2::geom_violin(
-        ggplot2::aes(group = age),
+        ggplot2::aes(group = BIN),
         col = NA,
         fill = "#993300",
         alpha = 0.5,
     ) +
     ggplot2::geom_boxplot(
-        ggplot2::aes(group = age),
+        ggplot2::aes(group = BIN),
         col = "black",
         fill = "white",
         alpha = 1,
