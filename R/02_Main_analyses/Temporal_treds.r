@@ -31,25 +31,38 @@ run_models <- FALSE
 # 2. Load the data of summary estimates ----
 #--------------------------------------------------------#
 
-# diversity estimates
-data_diversity <-
+data_all_estimates <-
     readr::read_rds(
         here::here(
-            "Data/Processed/", "Full_estimates_210410.rds"
+            "Data/Processed/PAP_all/pap_all_20220826"
         )
     )
 
+# diversity estimates
+data_diversity <-
+    data_all_estimates %>%
+    dplyr::select(
+        Climate_zone, dataset_id, PAP_diversity
+    ) %>%
+    tidyr::unnest(PAP_diversity) %>%
+    dplyr::select(-depth)  %>% 
+    add_age_bin(
+        bin_size = 1e3
+    )  %>% 
+    dplyr::filter(BIN >= 0)
+
 # RoC estimates
 data_roc <-
-    readr::read_rds(
-        here::here(
-            "Data/Processed/", "Full_roc_estimates_210410.rds"
-        )
+    data_all_estimates %>%
+    dplyr::select(
+        Climate_zone, dataset_id, PAP_roc
     ) %>%
-    dplyr::rename(
-        roc = ROC,
-        age = Age
-    )
+    tidyr::unnest(PAP_roc)  %>% 
+    add_age_bin(
+        bin_size = 1e3
+    )  %>% 
+    dplyr::filter(BIN >= 0)
+
 
 #--------------------------------------------------------#
 # 3. Plot the temporal trends of individual sequence ----
@@ -68,7 +81,7 @@ new_data_general <-
 new_data_dataset <-
     expand.grid(
         age = age_vec,
-        dataset_id = unique(data_diversity$dataset_id)
+        dataset_id = unique(data_all_estimates$dataset_id)
     ) %>%
     tibble::as_tibble()
 
@@ -93,7 +106,7 @@ data_sequence_length <-
 
 # vector with names of climate zones
 climate_zone_vec <-
-    data_diversity %>%
+    data_all_estimates %>%
     purrr::pluck("Climate_zone") %>%
     unique() %>%
     sort() %>%
@@ -179,13 +192,12 @@ readr::write_rds(
 # Peak points
 data_peak_seq <-
     data_roc %>%
-    add_age_bin(., bin_size = 1e3) %>%
-    dplyr::select(Climate_zone, dataset_id, BIN, Peak) %>%
+    dplyr::select(Climate_zone, dataset_id, BIN, peak) %>%
     tidyr::drop_na() %>%
     dplyr::group_by(Climate_zone, dataset_id, BIN) %>%
     dplyr::summarise(
         .groups = "drop",
-        peak = max(Peak),
+        peak = max(peak),
     ) %>%
     dplyr::rename(
         age = BIN
@@ -808,8 +820,8 @@ data_per_ecozone_pred_restruct <-
             c(
                 "Climate_zone",
                 "age",
-                "conf.low",
-                "conf.high",
+                "lwr",
+                "upr",
                 vars_table_ecozone$var_name
             )
         )
@@ -881,8 +893,8 @@ plot_estimates_per_ecozone <-
     ) +
     ggplot2::geom_ribbon(
         ggplot2::aes(
-            ymin = conf.low,
-            ymax = conf.high,
+            ymin = lwr,
+            ymax = upr,
             fill = Climate_zone,
         ),
         colour = NA,
