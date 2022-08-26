@@ -29,13 +29,14 @@ source(
 # 2. Load the data of summary estimates ----
 #--------------------------------------------------------#
 
-summary_diversity <-
+data_spatial_trends <-
     readr::read_rds(
         here::here(
-            "Data/Processed", "Summary_estimates_210410.rds"
+            "Data/Processed/PAP_all/pap_all_20220826"
         )
     ) %>%
-    dplyr::filter(!long < 0) %>% # dataset beyond the date-line is removed
+    # dataset beyond the date-line is removed
+    dplyr::filter(!long < 0) %>%
     dplyr::filter(long >= 0 & long <= 180)
 
 #--------------------------------------------------------#
@@ -147,7 +148,7 @@ if (
 
 # Base map (modified climate zones)
 base_map <-
-    summary_diversity %>%
+    data_spatial_trends %>%
     ggplot2::ggplot(
         ggplot2::aes(
             x = long,
@@ -218,11 +219,11 @@ base_map <-
 
 plot_dcca <-
     plot_spatial_dist(
-        data_source = summary_diversity,
+        data_source = data_spatial_trends,
         base_map = base_map,
-        var_name = "DCCA1",
-        lab_name = "DCCA1",
-        plot_title = "Compositional turnover (DCCA axis 1)",
+        var_name = "DCCA_gradient_length",
+        lab_name = "DCCA gradient length",
+        plot_title = "Compositional turnover (DCCA gradient length)",
         error_family = "mgcv::Tweedie(p = 1.1, link = 'log')",
         side_scale_ratio = 0.25
     )
@@ -243,11 +244,11 @@ ggplot2::ggsave(
 
 plot_mrt <-
     plot_spatial_dist(
-        data_source = summary_diversity,
+        data_source = data_spatial_trends,
         base_map = base_map,
-        var_name = "mrt_groups_raw",
-        lab_name = "MRT groups",
-        plot_title = "MRT_partitions",
+        var_name = "mrt_groups_n",
+        lab_name = "Number of MRT groups",
+        plot_title = "Number of MRT groups",
         error_family = "stats::poisson(link = 'log')",
         side_scale_ratio = 0.25
     )
@@ -278,7 +279,7 @@ pallete2 <-
     ]
 
 plot_ecozone_counts <-
-    summary_diversity %>%
+    data_spatial_trends %>%
     ggplot2::ggplot(
         ggplot2::aes(
             x = forcats::fct_infreq(Climate_zone),
