@@ -1,0 +1,31 @@
+raster_values,broadbiome,genzone,genzone_cluster
+1,Tropical        ,Tropical_Rainforest      ,Tropical_Rainforest      
+2,Tropical       ,Tropical_Monsoon  ,Tropical_Monsoon  
+3,Tropical,Tropical_Savannah,Tropical_Savannah
+4,Arid,Arid_Desert_hot,Arid_Desert
+5,Arid,Arid_Desert_cold,Arid_Desert
+6,Arid,Arid_Steppe_hot,Arid_Steppe
+7,Arid,Arid_Steppe_cold,Arid_Steppe
+8,Temperate,Temperate_Dry_Summer_Hot_Summer,Temperate_Dry_Summer
+9,Temperate,Temperate_Dry_Summer_Warm_Summer,Temperate_Dry_Summer
+10,Temperate,Temperate_Dry_Summer_Cold_Summer,Temperate_Dry_Summer
+11,Temperate,Temperate_Dry_Winter_Hot_Summer,Temperate_Dry_Winter
+12,Temperate,Temperate_Dry_Winter_Warm_Summer,Temperate_Dry_Winter
+13,Temperate,Temperate_Dry_Winter_Cold_Summer,Temperate_Dry_Winter
+14,Temperate,Temperate_Without_dry_season_Hot_Summer,Temperate_Without_dry_season
+15,Temperate,Temperate_Without_dry_season_Warm_Summer,Temperate_Without_dry_season
+16,Temperate,Temperate_Without_dry_season_Cold_Summer,Temperate_Without_dry_season
+17,Cold,Cold_Dry_Summer_Hot_Summer,Cold_Dry_Summer
+18,Cold,Cold_Dry_Summer_Warm_Summer,Cold_Dry_Summer
+19,Cold,Cold_Dry_Summer_Cold_Summer,Cold_Dry_Summer
+20,Cold,Cold_Dry_Summer_Ver_Cold_Summer,Cold_Dry_Summer
+21,Cold,Cold_Dry_Winter_Hot_Summer,Cold_Dry_Winter
+22,Cold,Cold_Dry_Winter_Warm_Summer,Cold_Dry_Winter
+23,Cold,Cold_Dry_Winter_Cold_Summer,Cold_Dry_Winter
+24,Cold,Cold_Dry_Winter_Ver_Cold_Summer,Cold_Dry_Winter
+25,Cold,Cold_Without_dry_season_Hot_Summer,Cold_Without_dry_season
+26,Cold,Cold_Without_dry_season_Warm_Summer,Cold_Without_dry_season
+27,Cold,Cold_Without_dry_season_Cold_Summer,Cold_Without_dry_season
+28,Cold,Cold_Without_dry_season_Very_Cold_Summer,Cold_Without_dry_season
+29,Polar,Polar_Tundra,Polar_Tundra
+30,Polar,Polar_Frost,Polar_Frost

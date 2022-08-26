@@ -38,12 +38,16 @@ package_list <-
   c(
     "assertthat",
     "devtools",
+    "ggpubr",
+    "ggside",
     "here",
     "httpgd",
     "janitor",
     "jsonlite",
     "languageserver",
+    "raster",
     "renv",
+    "rgdal",
     "roxygen2",
     "tidyverse",
     "usethis"
