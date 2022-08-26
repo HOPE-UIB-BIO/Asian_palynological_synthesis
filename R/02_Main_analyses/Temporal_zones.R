@@ -25,12 +25,6 @@ source(
     here::here("R/00_Config_file.R")
 )
 
-
-#--------------------------------------------------------#
-# 2. Load the data of summary estimates ----
-#--------------------------------------------------------#
-
-
 #--------------------------------------------------------#
 # 2. Load the data of summary estimates ----
 #--------------------------------------------------------#
@@ -39,8 +33,16 @@ source(
 data_diversity_zones <-
     readr::read_rds(
         here::here(
-            "Data/Processed/", "Full_estimates_210410.rds"
+            "Data/Processed/PAP_all/pap_all_20220826"
         )
+    ) %>%
+    dplyr::select(
+        Climate_zone, dataset_id, PAP_diversity
+    ) %>%
+    tidyr::unnest(PAP_diversity) %>%
+    dplyr::select(-depth) %>%
+    add_age_bin(
+        bin_size = 1e3
     ) %>%
     dplyr::filter(BIN >= 0) %>%
     dplyr::select(
@@ -237,7 +239,7 @@ plot_proportions_per_ecozone <-
         ggplot2::aes(
             group = BIN
         ),
-        col = "black", 
+        col = "black",
         fill = "white",
         outlier.shape = NA,
         alpha = 1,
