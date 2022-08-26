@@ -25,8 +25,6 @@ source(
     here::here("R/00_Config_file.R")
 )
 
-# change to TRUE if you need to run all the models (takes time!)
-run_models <- FALSE
 
 #--------------------------------------------------------#
 # 2. Load the data of summary estimates ----
@@ -184,7 +182,7 @@ data_zones_proportion <-
         )
     )
 
-data_tone_median_per_bin <-
+data_zone_median_per_bin <-
     data_zones_proportion %>%
     dplyr::group_by(var_name, Climate_zone, BIN) %>%
     dplyr::summarise(
@@ -246,7 +244,7 @@ plot_proportions_per_ecozone <-
         width = 250
     ) +
     ggplot2::geom_line(
-        data = data_tone_median_per_bin,
+        data = data_zone_median_per_bin,
         ggplot2::aes(
             y = var_median
         ),
