@@ -140,6 +140,43 @@ if (
 # 5. Define variables -----
 #----------------------------------------------------------#
 
+# 5.1. Analystical criteria -----
+
+# Values for predicting trends
+
+time_step <- 100
+
+age_min <- 0
+
+age_max <- 12e3
+
+age_vec <-
+    seq(age_min, age_max, by = time_step)
+
+# data for predicting
+new_data_general <-
+    tibble::tibble(
+        age = age_vec
+    )
+
+
+# 5.2. PAP estimation specification -----
+
+n_rand <- 1000
+
+transformation_coef <- "chisq"
+
+smoothing_method <- "age.w"
+min_points_smoothing <- 5
+max_points_smoothing <- 9
+age_range_smoothing <- 500
+working_units_selection <- "MW"
+size_of_bin <- 500
+n_mowing_windows <- 5
+which_level_select_in_bin <- "random"
+standardise_data <- TRUE
+n_individuals_to_standardise <- 150
+tranform_to_proportions <- TRUE
 
 #----------------------------------------------------------#
 # 6. Graphical options -----
