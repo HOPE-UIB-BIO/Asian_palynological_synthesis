@@ -53,10 +53,11 @@ data_work_roc <-
                 orig_pollen_percentage, # ..3
                 levels, # ..4
                 age_uncertainty_matrix, # ..5
-
                 dataset_id # ..6
             ),
             .f = ~ {
+                current_env <- environment()
+
                 message(
                     msg = paste("dataset", ..6)
                 )
@@ -94,13 +95,21 @@ data_work_roc <-
                             N_individuals = n_individuals_to_standardise, # [config_criteria]
                             tranform_to_proportions = !..3,
                             DC = transformation_coef, # [config_criteria]
-                            interoc_rest_throc_reshold = age_max, # [config_criteria]
+                            interest_threshold = age_max, # [config_criteria]
                             time_standardisation = size_of_bin # [config_criteria]
+                        )  %>% 
+                        RRatepol::fc_detect_peak_points(
+                            data_source = .,
+                            sel_method = "trend_linear",
+                            sd_threshold = 2
+
                         ),
                     silent = TRUE
                 )
 
-                if (!exists("roc_res")) {
+                if (
+                    !exists("roc_res", envir = current_env)
+                ) {
                     roc_res <- NA
                 }
 
