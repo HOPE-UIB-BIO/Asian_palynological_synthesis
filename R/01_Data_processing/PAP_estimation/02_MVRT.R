@@ -44,19 +44,40 @@ data_pollen <-
 #----------------------------------------------------------#
 
 data_work_mrt <-
-  data_pollen %>%
-  dplyr::mutate(
-    PAP_mrt = purrr::map2(
-      .x = pollen_percentages,
-      .y = levels,
-      .f = ~ REcopol::mv_regression_partition(
-          data_source_counts = .x,
-          data_source_levels = .y,
-          rand = n_rand, # [config_criteria]
-          transformation = transformation_coef # [config_criteria]
+    data_pollen %>%
+    dplyr::mutate(
+        PAP_mrt = purrr::map2(
+            .x = pollen_percentages,
+            .y = levels,
+            .f = ~ REcopol::mv_regression_partition(
+                data_source_counts = .x,
+                data_source_levels = .y,
+                rand = n_rand, # [config_criteria]
+                transformation = transformation_coef # [config_criteria]
+            )
         )
     )
-  )
+
+data_mrt_proc <-
+    data_work_mrt %>%
+    dplyr::mutate(
+        mvrt_partitions = purrr::map(
+            .x = PAP_mrt,
+            .f = ~ .x %>%
+                purrr::pluck("partitions") %>%
+                dplyr::rename(MRT_partitions = partition)
+        ),
+        mvrt_cp = purrr::map(
+            .x = PAP_mrt,
+            .f = ~ .x %>%
+                purrr::pluck("change_points")
+        ),
+        mvrt_groups_n = purrr::map_dbl(
+            .x = PAP_mrt,
+            .f = ~ .x %>%
+                purrr::pluck("mrt_groups") 
+        )
+    )
 
 
 #----------------------------------------------------------#
@@ -64,13 +85,13 @@ data_work_mrt <-
 #----------------------------------------------------------#
 
 data_mrt <-
-    data_work_mrt %>%
-    dplyr::select(dataset_id, PAP_mrt)
+    data_mrt_proc %>%
+    dplyr::select(dataset_id, PAP_mrt, mvrt_partitions, mvrt_cp, mvrt_groups_n)
 
 readr::write_rds(
     data_mrt,
     here::here(
-        "Data/Processed/MVRT/Data_mvrt_2022-07-30.rds"
+        "Data/Processed/MVRT/Data_mvrt_2022-09-14.rds"
     ),
     compress = "gz"
 )
