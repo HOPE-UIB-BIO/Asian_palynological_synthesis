@@ -59,6 +59,7 @@ data_cp_per_seq <-
         names_to = "var_name",
         values_to = "var"
     ) %>%
+    tidyr::drop_na(var)  %>% 
     # Set desired order of the facets
     dplyr::mutate(
         var_name = dplyr::case_when(
@@ -210,6 +211,7 @@ data_cp_density_per_ecozone_restructure <-
         names_to = "var_name",
         values_to = "var"
     ) %>%
+    tidyr::drop_na(var)  %>% 
     # Set desired order of the facets
     dplyr::mutate(
         var_name = dplyr::case_when(
@@ -240,7 +242,6 @@ data_cp_density_per_ecozone_restructure <-
             )
         )
     )
-
 
 # Assign unique colour to each climate zone
 ecozone_pallete <-
@@ -307,7 +308,6 @@ plot_ecozone <-
         axis.title = ggplot2::element_text(color = "black", size = 20),
         plot.margin = ggplot2::margin(0, 0.5, 0, 0, "cm") # t, r, b, l
     )
-
 
 ggplot2::ggsave(
     plot_ecozone,
