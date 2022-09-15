@@ -159,6 +159,7 @@ new_data_general <-
         age = age_vec
     )
 
+bin_size <- 1000
 
 # 5.2. PAP estimation specification -----
 
