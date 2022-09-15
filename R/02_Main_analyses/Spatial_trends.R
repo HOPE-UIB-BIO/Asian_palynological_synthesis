@@ -32,12 +32,31 @@ source(
 data_spatial_trends <-
     readr::read_rds(
         here::here(
-            "Data/Processed/PAP_all/pap_all_20220826"
+            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-15.rds"
         )
     ) %>%
-    # dataset beyond the date-line is removed
-    dplyr::filter(!long < 0) %>%
-    dplyr::filter(long >= 0 & long <= 180)
+    dplyr::select(
+        dataset_id,
+        long, lat,
+        Climate_zone,
+        dcca_grad_length,
+        dca_grad_length,
+        mvrt_groups_n
+    )
+
+beck_raster_file <-
+    raster::raster(
+        here::here(
+            "Data/Input/Biomes_spatial/Beck_KG_V1_present_0p083.tif"
+        )
+    )    
+
+# Read the raster value-climatic zone tranlation table
+koppen_tranlation_table <-
+    readr::read_csv(
+        here::here("Data/Input/Biomes_spatial//koppen_link.csv")
+    )
+
 
 #--------------------------------------------------------#
 # 3. Plot the diagrams ----
@@ -47,23 +66,7 @@ data_spatial_trends <-
 # A. Base map with 5 modified Köppen-Geiger climate zones (in Beck et al. 2018) ----
 #--------------------------------------------------------#
 
-# Read the raster points from the geo-tiff file published in Beck et al. 2018
-
-beck_raster_file <-
-    raster::raster(
-        here::here(
-            "Data/Input/Biomes_spatial/Beck_KG_V1_present_0p083.tif"
-        )
-    )
-
-# Read the raster value-climatic zone tranlation table
-koppen_tranlation_table <-
-    readr::read_csv(
-        here::here("Data/Input/Biomes_spatial//koppen_link.csv")
-    )
-
 # Extract the required raster points
-
 raster_df <-
     # Convert raster points into a dataframe
     as.data.frame(beck_raster_file, xy = TRUE) %>%
@@ -123,28 +126,6 @@ cbPalette1 <-
         )
     )
 
-if (
-    FALSE
-) {
-    # WIP use sf zoom to add country borders
-    library(sf)
-    library(rnaturalearth)
-    worldmap <-
-        rnaturalearth::ne_countries(
-            scale = "medium",
-            type = "map_units",
-            returnclass = "sf"
-        )
-
-    map_asia <-
-        sf::st_crop(
-            worldmap,
-            ymin = 5,
-            ymax = 80,
-            xmin = 30,
-            xmax = 173
-        )
-}
 
 # Base map (modified climate zones)
 base_map <-
@@ -156,14 +137,8 @@ base_map <-
         )
     ) +
     ggplot2::coord_fixed(
-        # ylim = c(5.00, 80.00),
-        # xlim = c(30.00, 173.00)
-    ) +
-    ggplot2::scale_x_continuous(
-        limits = c(30, 173),
-    ) +
-    ggplot2::scale_y_continuous(
-        limits = c(5, 80)
+        ylim = c(5.00, 80.00),
+        xlim = c(30.00, 173.00)
     ) +
     ggplot2::geom_tile(
         data = raster_df,
@@ -179,10 +154,10 @@ base_map <-
         fill = "Climate zones"
     ) +
     ggplot2::theme_classic() +
-    # ggplot2::borders(
-    #    colour = "black",
-    #     size = 0.2
-    # ) +
+    ggplot2::borders(
+        colour = "black",
+        size = 0.2
+    ) +
     ggplot2::guides(
         fill = ggplot2::guide_legend(
             nrow = 3,
@@ -199,66 +174,118 @@ base_map <-
         legend.position = "bottom",
         legend.box = "vertical",
         legend.direction = "horizontal",
-        legend.key.size = unit(0.70, "cm"),
-        legend.title = ggplot2::element_text(size = 14),
-        legend.text = ggplot2::element_text(size = 12),
+        legend.key.size = unit(0.6, "cm"),
+        legend.title = ggplot2::element_text(size = 12),
+        legend.text = ggplot2::element_text(size = 11),
         axis.title = ggplot2::element_text(
             color = "black",
-            size = 16
+            size = 14
         ),
         axis.text = ggplot2::element_text(
             colour = "black",
             size = 12
-        ),
-        plot.margin = ggplot2::margin(0, 0, 0.1, 0, "cm")
-    ) # t, r, b, l
+        )
+    )
+
+base_map_seq_hist <-
+  base_map +
+   ggplot2::annotation_custom(
+    grob =  ggplot2::ggplotGrob(
+      ggpubr::gghistogram(
+        data_spatial_trends$long,
+        fill = "#2CA388",
+        color = "#2CA388",
+        binwidth = 5,
+        size = 0.1,
+        alpha = 0.7
+      ) +
+        ggpubr::theme_transparent()
+    ),
+    xmin = 17,
+    xmax = 180,
+    ymin = -2.8,
+    ymax = 13
+  ) +
+   ggplot2::annotation_custom(
+    grob =  ggplot2::ggplotGrob(
+      ggpubr::gghistogram(
+        data_spatial_trends$lat,
+        fill = "#2CA388",
+        color = "#2CA388",
+        binwidth = 5,
+        size = 0.1,
+        alpha = 0.7
+      ) +
+        ggpubr::rotate() +
+        ggpubr::theme_transparent()
+    ),
+    xmin = 18.5,
+    xmax = 34,
+    ymin = 0.3,
+    ymax = 85
+  )
 
 #--------------------------------------------------------#
-# C.DCCA turnover ----
+# C. turnover ----
 #--------------------------------------------------------#
 
 plot_dcca <-
     plot_spatial_dist(
         data_source = data_spatial_trends,
-        base_map = base_map,
-        var_name = "DCCA_gradient_length",
+        base_map = base_map_seq_hist,
+        var_name = "dcca_grad_length",
         lab_name = "DCCA gradient length",
-        plot_title = "Compositional turnover (DCCA gradient length)",
-        error_family = "mgcv::Tweedie(p = 1.1, link = 'log')",
-        side_scale_ratio = 0.25
+        error_family = "mgcv::Tweedie(p = 1.1, link = 'log')"
     )
 
 ggplot2::ggsave(
     filename = here::here("Outputs/Figures/Spatial_DCCA.tiff"),
     plot = plot_dcca,
     dpi = 400,
-    width = 20,
-    height = 16,
+    width = 15,
+    height = 15,
+    units = "cm",
+    compress = "lzw"
+)
+
+plot_dca <-
+    plot_spatial_dist(
+        data_source = data_spatial_trends,
+        base_map = base_map_seq_hist,
+        var_name = "dca_grad_length",
+        lab_name = "DCA gradient length",
+        error_family = "mgcv::Tweedie(p = 1.1, link = 'log')"
+    )
+
+ggplot2::ggsave(
+    filename = here::here("Outputs/Figures/Spatial_DCA.tiff"),
+    plot = plot_dca,
+    dpi = 400,
+    width = 15,
+    height = 15,
     units = "cm",
     compress = "lzw"
 )
 
 #--------------------------------------------------------#
-# D. Raw MRT partitions (MRT partitions not divided by number of levels)
+# D.  MVRT partitions 
 #--------------------------------------------------------#
 
 plot_mrt <-
     plot_spatial_dist(
         data_source = data_spatial_trends,
-        base_map = base_map,
-        var_name = "mrt_groups_n",
-        lab_name = "Number of MRT groups",
-        plot_title = "Number of MRT groups",
-        error_family = "stats::poisson(link = 'log')",
-        side_scale_ratio = 0.25
+        base_map = base_map_seq_hist,
+        var_name = "mvrt_groups_n",
+        lab_name = "MRT groups",
+        error_family = "stats::poisson(link = 'log')"
     )
 
 ggplot2::ggsave(
     filename = here::here("Outputs/Figures/Spatial_MRT.tiff"),
     plot = plot_mrt,
     dpi = 400,
-    width = 20,
-    height = 16,
+    width = 15,
+    height = 15,
     units = "cm",
     compress = "lzw"
 )

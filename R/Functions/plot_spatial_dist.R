@@ -3,30 +3,35 @@ plot_spatial_dist <-
              base_map,
              var_name,
              lab_name,
-             plot_title,
-             error_family,
-             side_scale_ratio = 0.3) {
+             error_family) {
 
         # Scatterplot
         plot_main <-
             base_map +
             ggplot2::geom_point(
                 data = data_source,
-                size = 6,
-                colour = "white",
-            ) +
-            ggplot2::geom_point(
-                data = data_source,
                 ggplot2::aes(size = get(var_name)),
                 colour = "#000099",
             ) +
             ggplot2::scale_size_continuous(range = c(0, 5)) +
-            ggplot2::ggtitle(plot_title) +
             ggplot2::theme(
-                legend.margin = ggplot2::margin(-0.2, 0.8, 0, 0, unit = "cm")
+                legend.margin = ggplot2::margin(-0.3, 0.8, 0, 0, unit = "cm")
             ) +
             ggplot2::labs(
                 size = lab_name
+            )
+
+        plot_main_legend <-
+            ggpubr::get_legend(plot_main)
+
+        plot_main_no_legend <-
+            plot_main +
+            ggpubr::rremove("legend") +
+            ggplot2::theme(
+                plot.margin = ggplot2::unit(
+                    c(0, -0.1, -0.2, -0.5), # t, r, b, l
+                    "cm"
+                )
             )
 
         # Latitudinal and longitudinal trends
@@ -46,81 +51,125 @@ plot_spatial_dist <-
                 error_family = error_family
             )
 
-        plot_main_no_legend <-
-            plot_main +
-            ggpubr::rremove("legend")
-
-        plot_main_legend <-
-            ggpubr::get_legend(plot_main)
-
-        plot_with_sides <-
-            plot_main_no_legend +
-            ggside::geom_xsidebar(
-                data = data_pred_long$data_hist,
-                ggplot2::aes(x = long, y = n_rescale),
-                stat = "identity",
-                fill = "#2CA388",
-                color = "#2CA388",
-                size = 0.1,
-                alpha = 0.2
-            ) +
-            ggside::geom_xsidepoint(
-                data = data_source,
-                ggplot2::aes(x = long, y = get(var_name)),
-                col = "#2CA388",
-                alpha = 0.5
-            ) +
-            ggside::geom_xsidepath(
-                data = data_pred_long$data_trend_pred,
-                ggplot2::aes(x = long, y = get(var_name)),
-                size = 1,
-                colour = "#0072B2"
-            ) +
-            ggside::scale_xsidey_continuous(
-                limits = c(
-                    floor(min(data_pred_long$data_hist$n_rescale) * 0.9),
-                    ceiling(max(data_pred_long$data_hist$n_rescale) * 1.1)
+        lat_plot <-
+            data_source %>%
+            ggplot2::ggplot(
+                ggplot2::aes(
+                    x = lat,
+                    y = get(var_name)
                 )
             ) +
-            ggside::geom_ysidebar(
-                data = data_pred_lat$data_hist,
-                ggplot2::aes(y = lat, x = n_rescale),
-                stat = "identity",
-                fill = "#2CA388",
-                color = "#2CA388",
-                size = 0.1,
-                alpha = 0.2
-            ) +
-            ggside::geom_ysidepoint(
-                data = data_source,
-                ggplot2::aes(y = lat, x = get(var_name)),
+              ggplot2::geom_point(
                 col = "#2CA388",
-                alpha = 0.5
+                size = 2,
+                alpha = 0.8
             ) +
-            ggside::geom_ysidepath(
-                data = data_pred_lat$data_trend_pred,
-                ggplot2::aes(y = lat, x = get(var_name)),
-                size = 1,
+            ggplot2::geom_ribbon(
+                data = data_pred_lat,
+                ggplot2::aes(
+                    ymax = upr,
+                    ymin = lwr
+                ),
+                fill = "#0072B2",
+                colour = "NA",
+                alpha = 0.75
+            ) +
+            ggplot2::geom_line(
+                data = data_pred_lat,
+                size = 1.5,
+                colour = "#0072B2",
+            ) +
+            ggplot2::theme_classic() +
+            ggplot2::labs(x = "Latitude", y = lab_name) +
+            ggplot2::theme(
+                legend.position = "none",
+                axis.title = ggplot2::element_text(
+                    color = "black",
+                    size = 10
+                ),
+                axis.text = ggplot2::element_text(
+                    color = "black",
+                    size = 9
+                )
+            )
+
+        long_plot <-
+            data_source %>%
+            ggplot2::ggplot(
+                ggplot2::aes(
+                    x = long,
+                    y = get(var_name)
+                )
+            ) +
+              ggplot2::geom_point(
+                col = "#2CA388",
+                size = 2,
+                alpha = 0.8
+            ) +
+            ggplot2::geom_ribbon(
+                data = data_pred_long,
+                ggplot2::aes(
+                    ymax = upr,
+                    ymin = lwr
+                ),
+                fill = "#0072B2",
+                colour = "NA",
+                alpha = 0.75
+            ) +
+            ggplot2::geom_line(
+                data = data_pred_long,
+                size = 1.5,
                 colour = "#0072B2"
             ) +
-            ggside::scale_ysidex_continuous(
-                limits = c(
-                    floor(min(data_pred_lat$data_hist$n_rescale) * 0.9),
-                    ceiling(max(data_pred_lat$data_hist$n_rescale) * 1.1)
+            ggplot2::theme_classic() +
+            ggplot2::labs(x = "Longitude", y = "") +
+            ggplot2::theme(
+                legend.position = "none",
+                axis.title = ggplot2::element_text(
+                    color = "black",
+                    size = 10
+                ),
+                axis.text = ggplot2::element_text(
+                    color = "black",
+                    size = 9
                 )
+            )
+
+        trends_merged <-
+            ggpubr::ggarrange(
+                lat_plot,
+                long_plot,
+                ncol = 2,
+                align = "v"
             ) +
             ggplot2::theme(
-                ggside.panel.scale = side_scale_ratio
+                plot.margin = ggplot2::unit(
+                    c(0, 0.2, -0.2, 0.2), # t, r, b, l
+                    "cm"
+                )
             )
 
         final_plot <-
             ggpubr::ggarrange(
-                plot_with_sides,
+                trends_merged,
+                plot_main_no_legend,
+                nrow = 2,
+                ncol = 1,
+                heights = c(0.25, 0.7)
+            )
+
+        final_plot_legend <-
+            ggpubr::ggarrange(
+                final_plot,
                 plot_main_legend,
                 nrow = 2,
                 ncol = 1,
-                heights = c(0.6, 0.4)
+                heights = c(0.70, 0.3)
+            ) +
+            ggplot2::theme_bw() +
+            ggplot2::theme(
+                panel.border = ggplot2::element_blank()
             )
 
-        return(final_plot)
+        return(final_plot_legend)
     }
