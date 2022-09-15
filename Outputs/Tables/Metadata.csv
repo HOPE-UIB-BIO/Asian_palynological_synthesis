@@ -1,0 +1,206 @@
+dataset_id,handle,sitename,long,lat,altitude,depositionalenvironment,country,Climate_zone,source_of_data,data_publicity
+40997,CON16035,Lake Baikal,108.91361,53.95472,465,Lacustrine,Russia,Cold_Dry,Neotoma,open
+1843,OVRA1,Ovrazhnyii-1 Stream Exposure,134.56667,43.25,8,Bog,Russia,Cold_Without_dry_season,Neotoma,open
+41252,K7P2,Dyanushka K7P2,125.03694,65.03944,123,Mire,Russia,Cold_Without_dry_season,Neotoma,open
+4299,NEMINO,Nemino,34.58333,62.75,45,Mire,Russia,Cold_Without_dry_season,Neotoma,open
+PVT_Daihai_Lake_2004,DaihaiLake,Daihai Lake_2004,112.67,40.58,1220,Lake sediment,China,Arid,private,only_derivatives
+PVT_Dalianhai_Lake,Dalianhai,Dalianhai Lake,100.41,36.25,2850,lake,China,Arid,private,only_derivatives
+PVT_Dongi_Cona,DongiCona,Dongi Cona,98.5,35.5,4090,Lake,China,Polar,private,only_derivatives
+PVT_Gonghai_Lake,Gonghai,Gonghai Lake,112.23,38.9,1860,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Hoton_Nur_2,Hoton_2,Hoton-Nur-2,88.3,48.67,2083,Lake,Mongolia,Arid,private,only_derivatives
+PVT_Manas_Lake_LM1,ManasLake,Manas Lake,85.92,45.83,251,Lake sediment,China,Arid,private,only_derivatives
+PVT_Qidong,Qidong,Qidong,121.7,31.9,10,River basin,China,Temperate,private,only_derivatives
+PVT_Qinghai_Lake_QH2000,QinghaiLake,Qinghai Lake,100.52,36.67,3200,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Selin_Co_CK8803,SelinCo,Selin Co,88.52,31.57,4530,Lake sediment,China,Polar,private,only_derivatives
+PVT_Sihailongwan_Lake,Sihailongwan,Sihailongwan Lake,126.6,42.28,797,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Sumxi_Lake,SumxiLake,Sumxi Lake,80.24,34.61,5059,Lake sediment,China,Arid,private,only_derivatives
+PVT_Ulan_Ul_Lake,UlanUl,Ulan Ul Lake,90.5,34.87,4854,Lake sediment,China,Polar,private,only_derivatives
+PVT_Ximen_Co,XimenCo,Ximen Co,101.47,33.38,4020,Lake sediment,China,Polar,private,only_derivatives
+PVT_Xingyun_Lake,Xingyun,Xingyun Lake,102.78,24.34,1722,lake,China,Temperate,private,only_derivatives
+PVT_Yanghu_Lake,YanghuLake,Yanghu Lake,84.65,35.43,4778,Lake sediment,China,Arid,private,only_derivatives
+PANGAEA.834960,SONK_11_D,"Lake_Son-Kol, Kyrgyzstan",75.19611,41.79389,NA,lake,Kyrgyzstan,Cold_Without_dry_season,private,open
+PVT_Aibi_Lake,AibiLake,Aibi Lake,82.83,45.02,200,Lake,China,Arid,private,only_derivatives
+PVT_Akkol_Lake,AkkolLake,Akkol Lake,89.63,50.25,2204,Lake,Russia,Polar,private,only_derivatives
+PVT_Ayongwama_Co,AyongwamaCo,Ayongwama Co,98.2,34.83,4220,Lake,China,Polar,private,only_derivatives
+PVT_Baikal_lake,Baikal,Baikel Lake,105.87,52.08,130,Lake,Russia,Cold_Dry,private,only_derivatives
+PVT_Barkol_Lake,Barkol,Barkol Lake,92.8,43.62,1575,Lake,China,Arid,private,only_derivatives
+PVT_Chaiwopu_Lake,Chaiwopu,Chaiwopu Lake,87.78,43.55,1100,Lake,China,Arid,private,only_derivatives
+PVT_Dahaizi_Lake,DahaiziLake,Dahaizi Lake,102.67,27.83,3660,Lake sediment,China,Temperate,private,only_derivatives
+PVT_Dajiuhu_2013,Dajiuhu,Dajiuhu_2013,110,31.49,1751,Peat bog,China,Cold_Dry,private,only_derivatives
+PVT_Dali_Nur_Jiangjunpaozi_Lake,DaliNor_Jiangjunpaozi,Dali Nur-Jiangjunpaozi Lake,117.47,42.374,1490,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Dali_Nur_Liuzhouwan_Lake,DaliNor_Liuzhouwan,Dali Nur-Liuzhouwan Lake,116.683,42.70733,1365,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Daluoba_basin,Daluoba,Daluoba Basin,88.2,47.83,2020,Lake sediment,China,Arid,private,only_derivatives
+PVT_Dongganchi,Dongganchi,Dongganchi,115.78,39.53,49,River basin,China,Cold_Dry,private,only_derivatives
+PVT_Erhai_Lake,Erhai,Erhai Lake,100.2,25.77,1974,Lake sediment,China,Temperate,private,only_derivatives
+PVT_Erhailongwan_Lake,Erhailongwan,Erhailongwan Lake,126.37,42.3,724,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Ganhai_Lake,GanhaiLake,Ganhai Lake,112.19,38.89,1854,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Gantang,Gantang,Gantang,119.03,26.77,1007,Peat bog,China,Temperate,private,only_derivatives
+PVT_Grusha_Lake,GrushaLake,Grusha Lake,89.42,50.38,2413,Lake sediment,Russia,Polar,private,only_derivatives
+PVT_Guangfulin,Guangfulin,Guangfulin,121.19,31.06,4,Lake sediment,China,Temperate,private,only_derivatives
+PVT_Huguangyan_Maer_LakeB,HuguangyanMaer,Huguangyan Maar lake_B,110.28,21.15,88,Lake sediment,China,Temperate,private,only_derivatives
+PVT_Hulun_Lake_HL06,HulunLake,Hulun Nur Lake_2006,117.51,49.13,545,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Juyan_Lake,JuyanLake,Juyan Lake,101.85,41.89,892,Lake sediment,China,Arid,private,only_derivatives
+PVT_Kendegelukol_Lake,Kendege,Kendegelukol Lake,87.64,50.51,2050,Lake sediment,Russia,Polar,private,only_derivatives
+PVT_Kotokel,Kotokel,Lake Kotokel_2009,108.12,52.78,458,Lake sediment,Russia,Cold_Dry,private,only_derivatives
+PVT_Koucha_Lake,KouchaLake,Kucha Lake,97.24,34.01,4540,Lake sediment,China,Polar,private,only_derivatives
+PVT_Kuhai_Lake,KuhaiLake,Kuhai Lake,99.31,35.52,4150,Lake sediment,China,Polar,private,only_derivatives
+PVT_Longquan_Lake_LC2,LongquanLC2,Longquan Lake,112.24,31.08,80,Lake sediment,China,Temperate,private,only_derivatives
+PVT_Lop_Nur_Luo4,LopNur,Lop Nur_1983,90.25,40.33,800,Lake sediment,China,Arid,private,only_derivatives
+PVT_Luanhaizi_LH2,Luanhaizi,Luanhaizi Lake,101.35,37.59,3200,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Mengcun,Mengcun,Mengcun,117.12,38.05,5,River basin,China,Cold_Dry,private,only_derivatives
+PVT_Naleng_Co,NalengCo,Naleng Co Lake,99.76,31.11,4200,Lake sediment,China,Polar,private,only_derivatives
+PVT_Nantun,Nantun,Nantun,104.23,26.7,2197,Peat sediment,China,Temperate,private,only_derivatives
+PVT_Qigai_Nuur,QigaiNuur,Qigai Nuur,109.5,39.5,1408,Lake sediment,China,Arid,private,only_derivatives
+PVT_Qongjiamong_Co,Qongjiamong,Qongjiamong Co,92.37,29.81,4980,Lake sediment,China,Polar,private,only_derivatives
+PVT_Ren_Co_R1,RenCoR1,Ren Co,96.68,30.73,4450,Lake sediment,China,Polar,private,only_derivatives
+PVT_Sanjiaocheng_Section,Sanjiaocheng,Sanjiaocheng Section,103.34,39.01,1320,peat,China,Arid,private,only_derivatives
+PVT_Sayram_Lake,SayramLake,Sayram Lake,81.09,44.34,2125,Lake sediment,China,Cold_Without_dry_season,private,only_derivatives
+PVT_Shaamar,Shaamar,Shaamar,105.2,50.2,650,Eolian deposit,Mongolia,Cold_Dry,private,only_derivatives
+PVT_Shayema_Lake,ShayemaLake,Shayema Lake,102.22,28.58,102.22,Lake sediment,China,Temperate,private,only_derivatives
+PVT_Sujiawan,Sujiawan,Sujiawan,104.52,35.54,1950,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Tiancai_Lake,TiancaiLake,Tiancai Lake,99.72,26.63,3898,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Uzunkol_Lake,UzunkolLake,Uzunkol Lake,87.11,50.48,1985,Peat sediment,Russia,Cold_Without_dry_season,private,only_derivatives
+PVT_Wangjiadian_profile,Wangjiadian,Wangjiadian,114.67,36.16,67,Soil profile,China,Cold_Dry,private,only_derivatives
+PVT_Wulungu_Lake,Wulungu,Wulungu Lake,87.29,47.22,479,lake,China,Arid,private,only_derivatives
+PVT_Xiehu_Lake_SO4,XiehuLakeSO4,Xiehu Lake,122.52,37.38,0,Lake sediment,China,Cold_Dry,private,only_derivatives
+PVT_Yamant_Nur_Lake,YamantNur,Yamant Nur Lake,102.6,49.9,1000,Lake sediment,Mongolia,Arid,private,only_derivatives
+PVT_Yidun_Lake,YidunLake,Yidun Lake,99.55,30.3,4470,Lake sediment,China,Polar,private,only_derivatives
+PVT_Zigetang_Co,Zigetang_Co,Zigetang Lake,90.9,32,4560,Lake sediment,China,Polar,private,only_derivatives
+PANGAEA.896390,CH06_core,Siberia,97.716,70.667,NA,lake,Russia,Cold_Without_dry_season,private,open
+cao_2,Alut_Lake,Alut Lake,152.31,60.14,480,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_8,Baikal_Lake-CON01-603-5,Baikal Lake-CON01-603-5,108.9136111,53.95472222,480,Lake sediment,Russia,Cold_Dry,private,open
+cao_11,Barbarina_Tumsa,Barbarina Tumsa,123.35,73.5667,10,Peat sediment,Russia,Polar,private,open
+cao_14,PG1756,Billyakh Lake,126.77516,65.2955,340,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_19,CHABADA2,Chabada Lake,129.36666,61.98333,290,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_22,CHERNOE,Chernoe Lake,106.63333,50.95,500,Lake sediment,Russia,Cold_Dry,private,open
+cao_23,CHESNOK,Chesnok Peat,66.5,60,42,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_24,CAMPING,Chistoye Lake,151.833333,59.55,91,Peat sediment,Russia,Cold_Dry,private,open
+cao_26,DERPUT,Derput Bog,124.116667,57.033333,700,Bog sediment,Russia,Cold_Without_dry_season,private,open
+cao_30,Dolgoe_Ozero,Dolgoe Ozero,127.0666667,71.86666667,40,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_33,ELGENNYA,Elgennya Lake,149.008889,62.088889,1040,Lake sediment,Russia,Cold_Dry,private,open
+cao_35,EK4,Elikchan 4 Lake,151.89,60.73,810,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_39,ENTARNOY,Entarnoye Peat,78.333333,59,65,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_40,ERAVNOE,Bolshoe Eravnoe Lake,111.66666,52.58333,947,Lake sediment,Russia,Cold_Dry,private,open
+cao_41,GEK,Gek Lake,147.928889,63.515,969,Lake sediment,Russia,Polar,private,open
+cao_43,GOLUBOY,Goluboye Lake,152.266667,61.116667,810,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_44,Gurskii_Peat,Gurskii Peat,137.08,50.07,15,Peat sediment,Russia,Cold_Dry,private,open
+cao_50,Jack_London_Lake,Jack London Lake,149.5,62.17,820,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_51,KARASEOZ,Karasieozerskoe,60.75,56.766667,230,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_54,Khanda,Khanda,107,55.44,840,Peat sediment,Russia,Cold_Dry,private,open
+cao_56,KHOMUST,Khomustakh Lake,121.62,63.82,120,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_57,Kirek_Lake,Kirek Lake,84.21666667,56.1,90,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_59,CHESNOK_,Komaritsa Peat,66.5,60,42,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_60,Kosmodemyanskaya-1,Kosmodem'yanskaya-1,146.07,44.1,6,Peat sediment,NA,Cold_Without_dry_season,private,open
+cao_65,KUROP7,Bolshaya Kuropatoch'ya River_Kurop7,156.75,70.666667,7,Peat sediment,Russia,Polar,private,open
+cao_74,Lesnoye_Lake,Lesnoye Lake,151.87,59.58,95,Lake sediment,Russia,Cold_Dry,private,open
+cao_78,Lyadhej-To,Lyadhej-To Lake,65.75,68.25,150,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_79,MADJAGA,Madjagara Lake,120.96666,64.83333,160,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_80,MAKSIMKI,Maksimkin Yar,88.166667,58.333333,150,Bog sediment,Russia,Cold_Without_dry_season,private,open
+cao_82,Mereya_River,Mereya River,142.92,46.62,4,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_84,Nikolay,Lake Nikolay,124.25,73.6666,35,Lake sediment,Russia,Polar,private,open
+cao_86,NIZVAR,Nizhnevartovskoye,77,61.25,55,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_100,PETROP,Petropavlovka,82.5,58.333333,100,Bog sediment,Russia,Cold_Without_dry_season,private,open
+cao_101,Pobochnoye,Pobochnoye,51.84166667,53.025,58,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_102,PODKOVA,Podkova Lake,152.101667,59.964722,660,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_104,Rock_Island_Lake,Rock Island Lake,149.5,62.17,870,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_105,Salym-Yugan,Salym-Yugan,72.08583333,60.01916667,56,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_106,SAO1,Taymyr Lake_SAO1,100.5333,74.5464,47,Lake sediment,Russia,Polar,private,open
+cao_108,Selitkan-1,Selitkan-1,135.05,53.22,1320,Peat sediment,Russia,Cold_Dry,private,open
+cao_109,Selitkan-2,Selitkan-2,135.03,53.22,1300,Peat sediment,Russia,Cold_Dry,private,open
+cao_112,Sergeevskii,Sergeevskii,142.08,49.23,6,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_114,Seryebryanka_Stream,Seryebryanka Stream,146,44.05,5,Peat sediment,NA,Cold_Without_dry_season,private,open
+cao_116,SMOR,Smorodinovoye Lake,141.116667,64.766667,800,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_117,Sosednee_Lake,Sosednee Lake,149.5,62.17,822,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_122,TS,Taloye Lake,152.333333,61.016667,750,Lake sediment,Russia,Polar,private,open
+cao_124,TOM1,Tom' River Peat,84,56.166667,100,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_127,Vechernii_River,Vechernii River,147.75,63.28,800,Peat sediment,Russia,Cold_Dry,private,open
+cao_134,Zhukovskoye_Mire,Zhukovskoye Mire,84.83333333,56.33333333,106,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_137,PG1755,Lake Billyakh_PG1755,126.74633,65.272,340,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_158,USTMASH,UstMashevskoe,57.883333,56.316667,220,Peat sediment,Russia,Cold_Without_dry_season,private,open
+cao_164,Gur_sample,Gur,137.05,50,35,Peat sediment,Russia,Cold_Dry,private,open
+cao_166,Lake_Sokoch,Lake Sokoch,157.75815,53.25221667,495,Lake sediment,Russia,Cold_Dry,private,open
+cao_168,Patricia_Lake,Patricia Lake,176.5,63.325,121,Lake sediment,Russia,Polar,private,open
+cao_169,Pernatoye_Lake,Pernatoye Lake,155.3951667,50.0405,6,Lake sediment,NA,Cold_Without_dry_season,private,open
+cao_170,Sakhalin_Island_Khoe,Sakhalin Island_Khoe,142.14,51.34,15,Palaeosol,Russia,Cold_Without_dry_season,private,open
+cao_171,Sunset_Lake,Sunset Lake,175.3,64.84166667,36,Lake sediment,Russia,Cold_Dry,private,open
+cao_173,11-CH-12A,11-CH-12A Lake,102.288566,72.398881,60,Lake sediment,Russia,Cold_Without_dry_season,private,open
+cao_151,PG2022,Lake Kyutyunda_PG2022,123.64813,69.62852,66,Lake sediment,Russia,Cold_Dry,private,open
+cao_152,SAMAND,Samandon,136.25,70.766667,10,Bog sediment,Russia,Cold_Without_dry_season,private,open
+cao_85,NIZHNIVA,Nizhnevartovsk,76.666667,62,54,Bog sediment,Russia,Cold_Without_dry_season,private,open
+cao_71,Laptev_PM9462,Laptev PM9462,136,74.5,0,coastal sediment,NA,Polar,private,open
+PANGAEA.884462,BY10A,"Swan Lake, Central Tienshan Mountains, northwestern China",84.38194,43.04583,NA,lake,China,Arid,private,open
+PANGAEA.896256,XBWu-46,"South-eastern Tian Shan, north-west China",86.804,41.931,NA,lake,China,Arid,private,open
+PANGAEA.717128,Tso_Kar,"Tso Kar, Ladakh, NW India, Himalaya",78,33.1667,NA,lake,India,Polar,private,open
+PANGAEA.808952,Tso_Moriri,"Ladakh, NW India, Himalaya",78.32333,32.92944,4512,lake,India,Arid,private,open
+PANGAEA.872916,Toushe_Basin,"Toushe_Basin, Taiwan",120.88,23.82,NA,peat bog,Taiwan,Temperate,private,open
+PANGAEA.893308,Inle4,"Lake Inle, Shan State, Myanmar",96.91667,20.56667,NA,lake,Burma,Temperate,private,open
+PANGAEA.783359,M72/5_619-1,Black Sea,36.4925,42.2255,NA,coastal sediment,NA,Temperate,private,open
+cao_6,ARAL86,Aral Lake,59.983333,44.42,53,Lake sediment,Uzbekistan,Arid,private,open
+Lake_Moon,Lake_Moon,Lake Moon,120.8665,47.506,1190,lake,China,Cold_Dry,private,open
+47817,WENQUAN1,Wenquan wetland,81.03134,44.97373,1300,Wetland,China,Arid,private,open
+Sandynallah_SBBS,SAND_SBBS,Sandynallah marsh,76.63388889,11.43666667,2200,Peatland,India,Temperate,private,open
+876,GLADKOYE,Gladkoye Bog,83.333333,55,80,Bog,Russia,Cold_Without_dry_season,private,open
+46462,NOVOALEX,Novoalex peatland,41.039722,55.118056,112,Bog,Russia,Cold_Without_dry_season,private,open
+46466,BEREZ,Berezovskoye mire,38.5838,53.66192,161,Mire,Russia,Cold_Without_dry_season,private,open
+46483,BUTOVKA,Butovka,36.416667,55.166667,213,Raised Bog,Russia,Cold_Without_dry_season,private,open
+3896,BABOZ1,Babozero,37.516667,66.375,138,Lacustrine,Russia,Cold_Without_dry_season,private,open
+46479,KLUKVA,Klukva peatland,36.2525,53.834722,201,Bog,Russia,Cold_Without_dry_season,private,open
+46485,MDOLGOE,Myshetskoe-Dolgoe,37.333333,56.066667,198,Lacustrine,Russia,Cold_Without_dry_season,private,open
+1161,JACKW,Jack London Lake,179.623611,70.894167,7,Lacustrine,Russia,Polar,private,open
+2649,TOLMACH,Tolmachevsko-Krivodanovskii Peat,84,55,110,Terrestrial,Russia,Cold_Without_dry_season,private,open
+46447,POTERYAN,Poteryanny Zub,35.32822,68.82667,131,Lacustrine,Russia,Cold_Without_dry_season,private,open
+3975,CHABADA1,Chabada Lake,129.37787500000002,61.976835,290,Thermokarst Lake,Russia,Cold_Without_dry_season,private,open
+1444,KAYAKSK,Kayakskoye Zaimitschye,81,55,150,Terrestrial,Russia,Cold_Without_dry_season,private,open
+3499,OROKESS,Orokess River Mouth Exposure 4036,142,48.85,6,Coastal,Russia,Cold_Without_dry_season,private,open
+4304,NERO2P,Lake Nero,39.451389,57.183333,93,Drained Lake,Russia,Cold_Without_dry_season,private,open
+46488,KHARINEI,Lake Kharinei,62.75,67.366667,110,Lacustrine,Russia,Cold_Without_dry_season,private,open
+1155,IVAN3,Ivanovskoye Peat Bog,38.766667,56.816667,141,Palustrine,Russia,Cold_Without_dry_season,private,open
+2643,TIKHAN,Tikhangou Exposure,132.783333,42.833333,4,Terrestrial,Russia,Cold_Without_dry_season,private,open
+1844,OVRA2,Ovrazhnyii-2 Exposure 667-842,134.566667,43.25,10,Coastal,Russia,Cold_Without_dry_season,private,open
+4543,ZARUCKOE,Zaruckoe,36.25,63.9,20,Mire,Russia,Cold_Without_dry_season,private,open
+46473,SELIKHOV,Selikhovo,35.77489,53.21161,202,Mire,Russia,Cold_Without_dry_season,private,open
+364,CHERYAR,Chernyii Yar Exposure 955,134.433333,43.183333,4,Terrestrial,Russia,Cold_Without_dry_season,private,open
+40990,KTK1,Lake Kotokel,108.133333,52.783333,458,Lacustrine,Russia,Cold_Dry,private,open
+1979,PRIYAT,Priyatnoye Lake,151.716667,61.033333,980,Glacial Origin Lake,Russia,Cold_Without_dry_season,private,open
+4102,HUBSUGUL,Hubsugul,100.22665,50.6286,1645,Lacustrine,Mongolia,Cold_Dry,private,open
+4010,DABA8,Daba-Nur,98.76251,48.18924,2465,Lacustrine,Mongolia,Cold_Dry,private,open
+13079,HACHI-NU,Hachiman-Numa,140.866666666667,39.95,1580,Blanket Bog,Japan,Cold_Without_dry_season,private,open
+14619,ZOIGE08C1,Zoige Basin,102.633333333333,33.45,3467,Fen,China,Cold_Dry,private,open
+15720,YACHIDAI,Yachidaira Moor,140.20766500000002,37.729695,1500,Bog,Japan,Cold_Without_dry_season,private,open
+1439,KARASYE,Karasye Lake,70.22,53.03,435,Tectonic Origin Lake,Kazakhstan,Cold_Without_dry_season,private,open
+4081,GUNNUR,Gun-Nur,106.6188,50.2618,600,Lacustrine,Mongolia,Cold_Dry,private,open
+4097,HOTON,Hoton-Nur,88.28455,48.67256,2083,Lacustrine,Mongolia,Arid,private,open
+3861,ACHIT8,Achit-Nur,90.49975,49.48079,1435,Lacustrine,Mongolia,Arid,private,open
+22953,ISPANI2,Ispani 2,41.80203,41.862260000000006,1,Bog,Georgia,Temperate,private,open
+1845,OZERKI,Ozerki,80.466667,50.416667,227,Swamp,Kazakhstan,Arid,private,open
+41247,TIANCHIYL,Lake Tianchi,99.27974,25.87085,2550,Natural Lake,China,Temperate,private,open
+15624,HOSOIKE,Hosoike Moor,134.133333333333,35.35,970,Fen,Japan,Temperate,private,open
+41245,BAYANCH,Lake Bayanchagan,115.225425,41.632845,1355,Playa,China,Cold_Dry,private,open
+1860,PASHENN,Pashennoe,75.39858,49.36771,871,Tectonic Origin Lake,Kazakhstan,Arid,private,open
+30184,KNS11B,Kanas Lake,87.07225,48.802645,1365,Moraine Dammed Lake,China,Cold_Without_dry_season,private,open
+14612,HURLEG,Hurleg Lake,96.90074,37.27446,2817,Tectonic Origin Lake,China,Arid,private,open
+15649,IKENOKOC,Ikenokochi Moor,136.13079,35.653925,300,Mire,Japan,Temperate,private,open
+14134,IWAYA,Iwaya site,135.88674,35.51763,20,Mire,Japan,Temperate,private,open
+15656,YAMAKADO,Yamakado Moor,136.11934,35.54912,300,Mire,Japan,Temperate,private,open
+4020,DOOD4,Dood-Nur,99.383333,51.333333,1538,Lacustrine,Mongolia,Cold_Dry,private,open
+22330,DIDA-C,Didachara,42.4969444444444,41.6838888888889,2000,Fen,Georgia,Cold_Without_dry_season,private,open
+15704,UBUKA,Ubuka Basin,131.586111111111,34.4902777777778,390,Marsh,Japan,Temperate,private,open
+15709,YABITSU,Yabitsuyachi,140.9,40.6166666666667,1080,Bog,Japan,Cold_Without_dry_season,private,open
+14648,TIANCHI,Tianchi Lake,106.30884,35.264675,2430,Tectonic Origin Lake,China,Cold_Dry,private,open
+15665,MAKURA,Makura Moor,132.3875,34.7305555555556,720,Bog,Japan,Cold_Without_dry_season,private,open
+15678,OHNUMA,Ohnuma Moor,134.566666666667,35.4083333333333,610,Fen,Japan,Cold_Without_dry_season,private,open
+46523,MOKHOVOE_,Mokhovoye,64.25,53.766667,178,Fen,Kazakhstan,Arid,private,open
+3927,BEYSEHIR,"Beysehir Gölü I, Turkey",31.5,37.541667,NA,Lake,Turkey,Temperate,private,open
+4137,KARAMIK,"Kararmik Batakligi, Turkey",30.8,38.425,NA,Marsh,Turkey,Arid,private,open
+4442,SOGUT,"Sögüt Gölü, Turkey",29.898333,36.9975,NA,Drained Lake,Turkey,Cold_Dry,private,open
+4509,VAN,"Lake Van, Turkey",43,38.5,NA,Tectonic Origin Lake,Turkey,Cold_Dry,private,open
+24161,ABANT,"Abant Gölü, Turkey",31.283333,40.6,NA,Palustrine,Turkey,Cold_Dry,private,open
+24166,PINARBAS,"Pinarbasi, Turkey",30.05,37.466667,NA,Palustrine,Turkey,Temperate,private,open
+24175,AKGOL,"Akgöl Adabag, Turkey",33.733333,37.5,NA,Palustrine,Turkey,Arid,private,open
+pg_711911,LADIK,"Ladik Gölü, Turkey",36.016667,40.916667,NA,Lake,Turkey,Arid,private,open
+pg_858056,LC-IZN_comp (IZNIK),"Iznik Lake, Turkey",29.53333,40.43333,NA,Lake,Turkey,Temperate,private,open
+pg_874340,DSEn (Ein Gedi),"Dead Sea Basin, Israel",35.39417,31.46528,NA,Coastal,Israel,Arid,private,open
+pg_884740,KI10_I_II (Lake_Kinneret core site),"Sea of Galilee, Israel",35.58881,32.82328,NA,Coastal,Israel,Arid,private,open
+pg_907390,Kongor_Lake,"Kongor Lake, Iran",55.3908,37.2121,NA,Lake,Iran (Islamic Republic of),Arid,private,open
+pg_711930,MIRABAD,"Lake Mirabad, Iran",47.716667,33.083333,NA,Lake,Iran (Islamic Republic of),Temperate,private,open
+pg_738918,ZERIBAR,"Lake Zeribar, Iran",46.116667,35.533333,NA,Lake,Iran (Islamic Republic of),Cold_Dry,private,open
