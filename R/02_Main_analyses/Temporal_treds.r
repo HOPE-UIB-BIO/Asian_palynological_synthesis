@@ -288,7 +288,7 @@ data_per_seq_pred_restruct <-
         var_name = dplyr::case_when(
             var_name == "n0" ~ "N0",
             var_name == "n1" ~ "N1",
-            var_name == "n2" ~ "N2", 
+            var_name == "n2" ~ "N2",
             var_name == "n2_divided_by_n1" ~ "N2 divided by N1",
             var_name == "n1_divided_by_n0" ~ "N1 divided by N0",
             var_name == "ROC" ~ "RoC",
@@ -297,7 +297,7 @@ data_per_seq_pred_restruct <-
             var_name == "dca_axis_1" ~ "DCA1",
             TRUE ~ var_name
         )
-    )  %>% 
+    ) %>%
     dplyr::mutate(
         var_name = factor(var_name,
             levels = c(
@@ -431,9 +431,9 @@ if (
 ) {
     purrr::pwalk(
         .l = list(
-            vars_table_ecozone$var_name, # ..1
-            vars_table_ecozone$sel_error, # ..2
-            vars_table_ecozone$sel_data # ..3
+            vars_table$var_name, # ..1
+            vars_table$sel_error, # ..2
+            vars_table$sel_data # ..3
         ),
         .f = ~ {
             var_sel <- ..1
@@ -458,6 +458,7 @@ if (
                             )
 
                         message(sel_ecozone)
+                        
                         sel_data$dataset_id %>%
                             unique() %>%
                             length() %>%
@@ -503,8 +504,8 @@ if (
 
 data_per_ecozone_pred <-
     purrr::map2_dfr(
-        .x = vars_table_ecozone$var_name,
-        .y = vars_table_ecozone$sel_data,
+        .x = vars_table$var_name,
+        .y = vars_table$sel_data,
         .f = ~ {
             var_sel <- .x
             data_sel <- .y
@@ -569,12 +570,12 @@ data_per_ecozone_pred_restruct <-
                 "age",
                 "lwr",
                 "upr",
-                vars_table_ecozone$var_name
+                vars_table$var_name
             )
         )
     ) %>%
     tidyr::pivot_longer(
-        cols = vars_table_ecozone$var_name,
+        cols = vars_table$var_name,
         names_to = "var_name",
         values_to = "var"
     ) %>%
