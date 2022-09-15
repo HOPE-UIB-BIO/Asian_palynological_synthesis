@@ -19,57 +19,22 @@ make_figure_spatial_trend <-
             range()
 
         # Predict the models
-        data_pred <-
-            marginaleffects::predictions(
-                model = model_trend,
-                newdata = tibble::tibble(
-                    !!side := seq(
-                        from = min(x_range),
-                        to = max(x_range)
-                    )
+        suppressWarnings(
+            data_pred <-
+                REcopol::predic_model(
+                    data_source = tibble::tibble(
+                        !!side := seq(
+                            from = min(x_range),
+                            to = max(x_range)
+                        )
+                    ),
+                    model_source = model_trend,
+                ) %>%
+                tibble::as_tibble() %>%
+                dplyr::rename(
+                    !!var_name := fit
                 )
-            ) %>%
-            tibble::as_tibble() %>%
-            dplyr::rename(
-                !!var_name := predicted
-            )
-
-        y_range <-
-            c(
-                data_source %>%
-                    purrr::pluck(var_name),
-                data_pred %>%
-                    purrr::pluck(var_name)
-            ) %>%
-            range()
-
-        bin_size <- 5
-
-        data_hist_raw <-
-            data_source %>%
-            dplyr::mutate(
-                bin = floor(get(side) / bin_size) * bin_size
-            ) %>%
-            dplyr::group_by(bin) %>%
-            dplyr::count() %>%
-            dplyr::rename(
-                !!side := bin
-            )
-
-        data_hist <-
-            data_hist_raw %>%
-            dplyr::mutate(
-                n_rescale = scales::rescale(
-                    n,
-                    from = range(data_hist_raw$n),
-                    to = y_range
-                )
-            )
-
-        return(
-            list(
-                data_trend_pred = data_pred,
-                data_hist = data_hist
-            )
         )
+
+        return(data_pred)
     }
