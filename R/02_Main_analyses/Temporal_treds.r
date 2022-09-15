@@ -34,7 +34,7 @@ run_models <- FALSE
 data_all_estimates <-
     readr::read_rds(
         here::here(
-            "Data/Processed/PAP_all/pap_all_20220826"
+            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-15.rds"
         )
     )
 
@@ -42,14 +42,18 @@ data_all_estimates <-
 data_diversity <-
     data_all_estimates %>%
     dplyr::select(
-        Climate_zone, dataset_id, PAP_diversity
+        Climate_zone, dataset_id, PAP_merge
     ) %>%
-    tidyr::unnest(PAP_diversity) %>%
-    dplyr::select(-depth)  %>% 
+    tidyr::unnest(PAP_merge) %>%
     add_age_bin(
-        bin_size = 1e3
-    )  %>% 
-    dplyr::filter(BIN >= 0)
+        bin_size = bin_size # [config]
+    ) %>%
+    dplyr::filter(BIN >= 0) %>%
+    dplyr::mutate(
+        # adjust values so small that they are smaller than zero
+        dcca_axis_1 = ifelse(dcca_axis_1 < 0, 0, dcca_axis_1),
+        dca_axis_1 = ifelse(dca_axis_1 < 0, 0, dca_axis_1)
+    )
 
 # RoC estimates
 data_roc <-
@@ -57,26 +61,19 @@ data_roc <-
     dplyr::select(
         Climate_zone, dataset_id, PAP_roc
     ) %>%
-    tidyr::unnest(PAP_roc)  %>% 
+    tidyr::unnest(PAP_roc) %>%
+    dplyr::rename(
+        age = Age
+    ) %>%
     add_age_bin(
-        bin_size = 1e3
-    )  %>% 
+        bin_size = bin_size # [config]
+    ) %>%
     dplyr::filter(BIN >= 0)
 
 
 #--------------------------------------------------------#
 # 3. Plot the temporal trends of individual sequence ----
 #--------------------------------------------------------#
-
-# Values for predicting trends
-age_vec <-
-    seq(0, 12e3, by = 100)
-
-# data for predicting
-new_data_general <-
-    tibble::tibble(
-        age = age_vec
-    )
 
 new_data_dataset <-
     expand.grid(
@@ -113,101 +110,30 @@ climate_zone_vec <-
     rlang::set_names()
 
 # tables with names of variables, errors, and dataframes
-vars_table_indiv <-
+vars_table <-
     tibble::tibble(
         var_name = c(
-            "N0",
-            "N1",
-            "N2",
-            "DCCA1",
-            "N2_divided_by_N1",
-            "N1_divided_by_N0",
-            "roc"
+            "n0",
+            "n1",
+            "n2",
+            "dcca_axis_1",
+            "dca_axis_1",
+            "n2_divided_by_n1",
+            "n1_divided_by_n0",
+            "ROC",
+            "Peak"
         ),
         sel_error = c(
-            rep("mgcv::Tweedie(p = 1.1)", 4),
+            rep("mgcv::Tweedie(p = 1.1)", 5),
             rep("mgcv::betar(link = 'logit')", 2),
-            "mgcv::Tweedie(p = 1.1)"
+            "mgcv::Tweedie(p = 1.1)",
+            "stats::quasibinomial(link = 'logit')"
         ),
         sel_data = c(
-            rep("data_diversity", 6),
-            "data_roc"
+            rep("data_diversity", 7),
+            rep("data_roc", 2)
         )
     )
-
-vars_table_ecozone <-
-    dplyr::bind_rows(
-        vars_table_indiv,
-        tibble::tibble(
-            var_name = c(
-                "proportion_of_zones",
-                "peak"
-            ),
-            sel_error = c(
-                "mgcv::betar(link = 'logit')",
-                "stats::binomial(link = 'logit')"
-            ),
-            sel_data = c(
-                "data_mrt_seq",
-                "data_peak_seq"
-            )
-        )
-    )
-
-# MRT partition estimates
-n_zones_per_seq <-
-    data_diversity %>%
-    dplyr::select(dataset_id, BIN, mrt_partiton) %>%
-    tidyr::drop_na() %>%
-    dplyr::group_by(dataset_id) %>%
-    dplyr::summarise(
-        .groups = "drop",
-        n_zones = unique(mrt_partiton) %>%
-            length()
-    )
-
-data_mrt_seq <-
-    data_diversity %>%
-    dplyr::select(Climate_zone, dataset_id, BIN, mrt_partiton) %>%
-    dplyr::group_by(Climate_zone, dataset_id, BIN) %>%
-    summarise(
-        .groups = "drop",
-        zones_perbin = unique(mrt_partiton) %>%
-            length(),
-    ) %>%
-    dplyr::left_join(
-        n_zones_per_seq,
-        by = "dataset_id"
-    ) %>%
-    dplyr::mutate(
-        proportion_of_zones = (zones_perbin / n_zones),
-        age = BIN
-    )
-
-readr::write_rds(
-    data_mrt_seq,
-    here::here("Data/Processed/mrt_per_seq.rds")
-)
-
-# Peak points
-data_peak_seq <-
-    data_roc %>%
-    dplyr::select(Climate_zone, dataset_id, BIN, peak) %>%
-    tidyr::drop_na() %>%
-    dplyr::group_by(Climate_zone, dataset_id, BIN) %>%
-    dplyr::summarise(
-        .groups = "drop",
-        peak = max(peak),
-    ) %>%
-    dplyr::rename(
-        age = BIN
-    )
-
-readr::write_rds(
-    data_peak_seq,
-    here::here("Data/Processed/peak_points_per_seq.rds")
-)
-
 
 
 #---------------------#
@@ -220,9 +146,9 @@ if (
 ) {
     purrr::pwalk(
         .l = list(
-            vars_table_indiv$var_name, # ..1
-            vars_table_indiv$sel_error, # ..2
-            vars_table_indiv$sel_data # ..3
+            vars_table$var_name, # ..1
+            vars_table$sel_error, # ..2
+            vars_table$sel_data # ..3
         ),
         .f = ~ {
             var_sel <- ..1
@@ -249,8 +175,7 @@ if (
                 x = data_mod,
                 file = paste0(
                     here::here(
-                        "Data/Processed/Models/Per_sequence/",
-                        "Individual_seq_mulitGAM"
+                        "Data/Processed/Models/Per_sequence/"
                     ),
                     "/",
                     var_sel,
@@ -263,7 +188,7 @@ if (
 
 data_per_seq_pred <-
     purrr::map_dfr(
-        .x = vars_table_indiv$var_name,
+        .x = vars_table$var_name,
         .f = ~ {
             var_sel <- .x
 
@@ -273,8 +198,7 @@ data_per_seq_pred <-
                 readr::read_rds(
                     file = paste0(
                         here::here(
-                            "Data/Processed/Models/Per_sequence/",
-                            "Individual_seq_mulitGAM"
+                            "Data/Processed/Models/Per_sequence/"
                         ),
                         "/",
                         var_sel,
@@ -303,155 +227,11 @@ data_per_seq_pred <-
         }
     )
 
-# 3.1.B - using ecozone hGAM -----
-# alternative method to fit the models
-if (
-    # it is turn off by default
-    FALSE
-) {
-    if (
-        run_models == TRUE
-    ) {
-        purrr::pwalk(
-            .l = list(
-                vars_table_ecozone$var_name, # ..1
-                vars_table_ecozone$sel_error, # ..2
-                vars_table_ecozone$sel_data # ..3
-            ),
-            .f = ~ {
-                var_sel <- ..1
-                error_sel <- ..2
-                data_sel <- ..3
-
-                message(
-                    paste("fitting", var_sel)
-                )
-
-                data_ecozone <-
-                    purrr::map(
-                        .x = climate_zone_vec,
-                        .id = "Climate_zone",
-                        .f = ~ {
-                            sel_ecozone <- .x
-
-                            sel_data <-
-                                get(data_sel) %>%
-                                dplyr::filter(Climate_zone == sel_ecozone) %>%
-                                dplyr::mutate(
-                                    dataset_id = as.factor(dataset_id)
-                                )
-
-                            message(sel_ecozone)
-                            sel_data$dataset_id %>%
-                                unique() %>%
-                                length() %>%
-                                message()
-
-                            if (
-                                nrow(sel_data) > 0
-                            ) {
-                                # Fit GAM model
-                                data_mod <-
-                                    REcopol::fit_hgam(
-                                        x_var = "age",
-                                        y_var = var_sel,
-                                        group_var = "dataset_id",
-                                        smooth_basis = "tp",
-                                        data_source = sel_data,
-                                        error_family = error_sel,
-                                        sel_k = 10,
-                                        common_trend = FALSE,
-                                        use_parallel = FALSE,
-                                        max_itiration = 200
-                                    )
-
-                                return(data_mod)
-                            }
-                        }
-                    )
-
-                readr::write_rds(
-                    x = data_ecozone,
-                    file = paste0(
-                        here::here(
-                            "Data/Processed/Models/Per_sequence/Individual_seq_hGAM"
-                        ),
-                        "/",
-                        var_sel,
-                        ".rds"
-                    )
-                )
-            }
-        )
-    }
-
-    data_per_seq_pred <-
-        purrr::map2_dfr(
-            .x = vars_table_indiv$var_name,
-            .y = vars_table_indiv$sel_data,
-            .f = ~ {
-                var_sel <- .x
-                data_sel <- .y
-
-                data_mod <-
-                    readr::read_rds(
-                        file = paste0(
-                            here::here(
-                                "Data/Processed/Models/Per_sequence/",
-                                "Individual_seq_hGAM"
-                            ),
-                            "/",
-                            var_sel,
-                            ".rds"
-                        )
-                    )
-
-                message(var_sel)
-
-                data_ecozone <-
-                    purrr::map_dfr(
-                        .x = climate_zone_vec,
-                        .id = "Climate_zone",
-                        .f = ~ {
-                            sel_ecozone <- .x
-
-                            message(sel_ecozone)
-
-                            sel_data <-
-                                get(data_sel) %>%
-                                dplyr::filter(Climate_zone == sel_ecozone) %>%
-                                dplyr::mutate(
-                                    dataset_id = as.factor(dataset_id)
-                                )
-
-                            new_data_ecozone <-
-                                expand.grid(
-                                    age = age_vec,
-                                    dataset_id = unique(sel_data$dataset_id)
-                                ) %>%
-                                tibble::as_tibble()
-
-                            # Predict the model
-                            data_pred <-
-                                REcopol::predic_model(
-                                    model_source = data_mod[[sel_ecozone]],
-                                    data_source = new_data_ecozone
-                                ) %>%
-                                dplyr::rename(
-                                    !!var_sel := fit
-                                )
-
-                            return(data_pred)
-                        }
-                    )
-            }
-        )
-}
 
 # restructure the data so all values are in one column and there is a column
 #   with the name of the variable
 # Filter out prediction! Keep only those prediction which is in the same time
-#   bin as the data (do not predict more than 1000 years away form data).
+#   bin as the data (do not predict more than 1000 years away from data).
 #   In addtion, filer out all prediction with too high uncertaity (sd > 2)
 data_per_seq_pred_restruct <-
     data_per_seq_pred %>%
@@ -464,19 +244,21 @@ data_per_seq_pred_restruct <-
                 "sd_error",
                 "lwr",
                 "upr",
-                vars_table_indiv$var_name
+                vars_table$var_name
             )
         )
     ) %>%
     tidyr::pivot_longer(
-        cols = vars_table_indiv$var_name,
+        cols = vars_table$var_name,
         names_to = "var_name",
         values_to = "var"
     ) %>%
     tidyr::drop_na(var) %>%
     # remove the high uncertainty
     dplyr::filter(sd_error < 2) %>%
-    add_age_bin(, bin_size = 1e3) %>%
+    add_age_bin(.,
+        bin_size = bin_size # [config]
+    ) %>%
     tidyr::nest(
         data = c(age, BIN, lwr, upr, sd_error, var_name, var)
     ) %>%
@@ -504,49 +286,30 @@ data_per_seq_pred_restruct <-
     # Set desired order of the facets
     dplyr::mutate(
         var_name = dplyr::case_when(
-            var_name == "N2_divided_by_N1" ~ "N2 divided by N1",
-            var_name == "N1_divided_by_N0" ~ "N1 divided by N0",
-            var_name == "roc" ~ "RoC",
+            var_name == "n0" ~ "N0",
+            var_name == "n1" ~ "N1",
+            var_name == "n2" ~ "N2", 
+            var_name == "n2_divided_by_n1" ~ "N2 divided by N1",
+            var_name == "n1_divided_by_n0" ~ "N1 divided by N0",
+            var_name == "ROC" ~ "RoC",
+            var_name == "Peak" ~ "Peak-points",
+            var_name == "dcca_axis_1" ~ "DCCA1",
+            var_name == "dca_axis_1" ~ "DCA1",
             TRUE ~ var_name
         )
-    ) %>%
-    # attach peak points
-    dplyr::bind_rows(
-        data_peak_seq %>%
-            dplyr::mutate(
-                BIN = age
-            ) %>%
-            dplyr::select(
-                dataset_id, age, BIN,
-                var = peak
-            ) %>%
-            dplyr::mutate(
-                var_name = "Peak-points proportion"
-            )
-    ) %>%
-    # attach MRT
-    dplyr::bind_rows(
-        data_mrt_seq %>%
-            dplyr::select(
-                dataset_id, age, BIN,
-                var = proportion_of_zones
-            ) %>%
-            dplyr::mutate(
-                var_name = "MRT-zones proportion"
-            )
-    ) %>%
+    )  %>% 
     dplyr::mutate(
         var_name = factor(var_name,
             levels = c(
                 "DCCA1",
+                "DCA1",
                 "N0",
                 "N1",
                 "N2",
                 "N2 divided by N1",
                 "N1 divided by N0",
                 "RoC",
-                "Peak-points proportion",
-                "MRT-zones proportion"
+                "Peak-points"
             )
         )
     )
@@ -562,14 +325,6 @@ data_per_seq_pred_boxplot <-
     dplyr::summarise(
         .groups = "drop",
         var = mean(var)
-    )
-
-data_per_seq_boxplot_median <-
-    data_per_seq_pred_boxplot %>%
-    dplyr::group_by(var_name, BIN) %>%
-    dplyr::summarise(
-        .groups = "drop",
-        var_median = median(var)
     )
 
 plot_sequence_boxplot <-
@@ -602,14 +357,6 @@ plot_sequence_boxplot <-
         alpha = 1,
         width = 250,
         outlier.shape = NA
-    ) +
-    ggplot2::geom_line(
-        data = data_per_seq_boxplot_median,
-        ggplot2::aes(
-            y = var_median
-        ),
-        size = 1,
-        color = "black"
     ) +
     ggplot2::facet_wrap(
         ~var_name,
