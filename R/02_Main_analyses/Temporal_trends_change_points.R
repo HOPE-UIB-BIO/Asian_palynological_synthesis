@@ -59,7 +59,7 @@ data_cp_per_seq <-
         names_to = "var_name",
         values_to = "var"
     ) %>%
-    tidyr::drop_na(var)  %>% 
+    tidyr::drop_na(var) %>%
     # Set desired order of the facets
     dplyr::mutate(
         var_name = dplyr::case_when(
@@ -211,7 +211,7 @@ data_cp_density_per_ecozone_restructure <-
         names_to = "var_name",
         values_to = "var"
     ) %>%
-    tidyr::drop_na(var)  %>% 
+    tidyr::drop_na(var) %>%
     # Set desired order of the facets
     dplyr::mutate(
         var_name = dplyr::case_when(
@@ -243,24 +243,6 @@ data_cp_density_per_ecozone_restructure <-
         )
     )
 
-# Assign unique colour to each climate zone
-ecozone_pallete <-
-    c(
-        "#FFCC99",
-        "#993300",
-        "#FF6600",
-        "#3399FF",
-        "#00CCCC"
-    ) %>%
-    rlang::set_names(
-        nm = c(
-            "Arid",
-            "Cold_Dry",
-            "Cold_Without_dry_season",
-            "Polar",
-            "Temperate"
-        )
-    )
 
 plot_ecozone <-
     data_cp_density_per_ecozone_restructure %>%
@@ -284,8 +266,12 @@ plot_ecozone <-
             .rows = ggplot2::label_wrap_gen(10)
         )
     ) +
-    ggplot2::scale_color_manual(values = ecozone_pallete) +
-     ggplot2::scale_fill_manual(values = ecozone_pallete) +
+    ggplot2::scale_fill_manual(
+        values = ecozone_pallete # [config]
+    ) +
+    ggplot2::scale_color_manual(
+        values = ecozone_pallete # [config]
+    ) +
     ggplot2::theme_classic() +
     ggplot2::ggtitle(
         "Temporal trends of change-points"

@@ -587,24 +587,6 @@ data_per_ecozone_pred_restruct <-
 #---------------------#
 # Assign unique colour to each climate zone
 
-ecozone_pallete <-
-    c(
-        "#FFCC99",
-        "#993300",
-        "#FF6600",
-        "#3399FF",
-        "#00CCCC"
-    ) %>%
-    rlang::set_names(
-        nm = c(
-            "Arid",
-            "Cold_Dry",
-            "Cold_Without_dry_season",
-            "Polar",
-            "Temperate"
-        )
-    )
-
 plot_estimates_per_ecozone <-
     data_per_ecozone_pred_restruct %>%
     # Set desired order of the facets
@@ -669,8 +651,12 @@ plot_estimates_per_ecozone <-
         x = "Time (yr BP)",
         y = "Estimate"
     ) +
-    ggplot2::scale_fill_manual(values = ecozone_pallete) +
-    ggplot2::scale_color_manual(values = ecozone_pallete) +
+    ggplot2::scale_fill_manual(
+        values = ecozone_pallete # [config]
+        ) +
+    ggplot2::scale_color_manual(
+        values = ecozone_pallete # [config]
+        ) +
     ggplot2::theme(
         strip.text.x = ggplot2::element_text(size = 14),
         plot.title = ggplot2::element_text(
