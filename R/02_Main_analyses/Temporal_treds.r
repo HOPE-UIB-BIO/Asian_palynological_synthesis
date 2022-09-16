@@ -458,7 +458,7 @@ if (
                             )
 
                         message(sel_ecozone)
-                        
+
                         sel_data$dataset_id %>%
                             unique() %>%
                             length() %>%
@@ -610,11 +610,15 @@ plot_estimates_per_ecozone <-
     # Set desired order of the facets
     dplyr::mutate(
         var_name = dplyr::case_when(
-            var_name == "proportion_of_zones" ~ "MRT-zones proportion",
-            var_name == "peak" ~ "Peak-points proportion",
-            var_name == "N2_divided_by_N1" ~ "N2 divided by N1",
-            var_name == "N1_divided_by_N0" ~ "N1 divided by N0",
-            var_name == "roc" ~ "RoC",
+            var_name == "n0" ~ "N0",
+            var_name == "n1" ~ "N1",
+            var_name == "n2" ~ "N2",
+            var_name == "n2_divided_by_n1" ~ "N2 divided by N1",
+            var_name == "n1_divided_by_n0" ~ "N1 divided by N0",
+            var_name == "ROC" ~ "RoC",
+            var_name == "Peak" ~ "Peak-points",
+            var_name == "dcca_axis_1" ~ "DCCA1",
+            var_name == "dca_axis_1" ~ "DCA1",
             TRUE ~ var_name
         )
     ) %>%
@@ -622,14 +626,14 @@ plot_estimates_per_ecozone <-
         var_name = factor(var_name,
             levels = c(
                 "DCCA1",
+                "DCA1",
                 "N0",
                 "N1",
                 "N2",
                 "N2 divided by N1",
                 "N1 divided by N0",
                 "RoC",
-                "Peak-points proportion",
-                "MRT-zones proportion"
+                "Peak-points"
             )
         )
     ) %>%
