@@ -159,6 +159,7 @@ new_data_general <-
         age = age_vec
     )
 
+bin_size <- 1000
 
 # 5.2. PAP estimation specification -----
 
@@ -198,5 +199,41 @@ image_height <- 12
 image_units <- "cm"
 
 # define pallets
+ecozone_pallete_full <-
+    c(
+        "#FFCC99",
+        "#993300",
+        "#FF6600",
+        "#3399FF",
+        "#999999",
+        "#00CCCC",
+        "#99CC00",
+        "#006600",
+        "#996600"
+    ) %>%
+    rlang::set_names(
+        nm = c(
+            "Arid",
+            "Cold_Dry",
+            "Cold_Without_dry_season",
+            "Polar",
+            "Polar_Frost",
+            "Temperate",
+            "Tropical_Monsoon",
+            "Tropical_Rainforest",
+            "Tropical_Savannah"
+        )
+    )
+
+ecozone_pallete <-
+    ecozone_pallete_full[
+        c(
+            "Arid",
+            "Cold_Dry",
+            "Cold_Without_dry_season",
+            "Polar",
+            "Temperate"
+        )
+    ]
 
 # define common color

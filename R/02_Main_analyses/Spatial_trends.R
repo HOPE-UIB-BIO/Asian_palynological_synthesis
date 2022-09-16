@@ -98,33 +98,6 @@ raster_df <-
         )
     )
 
-# Assign unique colour to each climate zone
-cbPalette1 <-
-    c(
-        "#FFCC99",
-        "#993300",
-        # "#CC6600",
-        "#FF6600",
-        "#3399FF",
-        "#999999",
-        "#00CCCC",
-        "#99CC00",
-        "#006600",
-        "#996600"
-    ) %>%
-    rlang::set_names(
-        nm = c(
-            "Arid",
-            "Cold_Dry",
-            "Cold_Without_dry_season",
-            "Polar",
-            "Polar_Frost",
-            "Temperate",
-            "Tropical_Monsoon",
-            "Tropical_Rainforest",
-            "Tropical_Savannah"
-        )
-    )
 
 
 # Base map (modified climate zones)
@@ -146,7 +119,7 @@ base_map <-
         inherit.aes = FALSE, alpha = 0.75
     ) +
     ggplot2::scale_fill_manual(
-        values = cbPalette1
+        values = ecozone_pallete_full # [config]
     ) +
     ggplot2::labs(
         x = "Longitude",
@@ -294,17 +267,6 @@ ggplot2::ggsave(
 # E.Sequences per ecozone ----
 #--------------------------------------------------------#
 
-pallete2 <-
-    cbPalette1[
-        c(
-            "Arid",
-            "Cold_Dry",
-            "Cold_Without_dry_season",
-            "Polar",
-            "Temperate"
-        )
-    ]
-
 plot_ecozone_counts <-
     data_spatial_trends %>%
     ggplot2::ggplot(
@@ -324,7 +286,9 @@ plot_ecozone_counts <-
         vjust = -0.5
     ) +
     ggplot2::theme_classic() +
-    ggplot2::scale_fill_manual(values = pallete2) +
+    ggplot2::scale_fill_manual(
+        values = ecozone_pallete # [config]
+    ) +
     ggplot2::ggtitle("Sequences in each climate zone") +
     ggplot2::labs(fill = "Modified Köppen-Geiger climate zones", ) +
     ggplot2::theme(
