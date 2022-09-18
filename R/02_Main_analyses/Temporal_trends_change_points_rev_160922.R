@@ -376,7 +376,7 @@ per_climate_zone <-
 ggsave(
   filename =
     here::here(
-      "Outputs/Figures/Change_point_density_climate_zone_test_180922.tiff"
+      "Outputs/Figures/Change_point_density_climate_zone_180922.tiff"
     ),
   plot = per_climate_zone,
   dpi = 200,
