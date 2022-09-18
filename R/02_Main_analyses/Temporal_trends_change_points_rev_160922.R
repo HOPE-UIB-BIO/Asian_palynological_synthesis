@@ -184,8 +184,13 @@ whole_continent <-
         .y = data,
         .f = ~ .x %>%
           ggplot2::ggplot() +
-          ggplot2::geom_line(ggplot2::aes(x = var, y = density)) +
-          ggplot2::coord_cartesian(xlim = range(.y$BIN)) +
+          ggplot2::geom_line(ggplot2::aes(x = var, y = density)
+                             ) +
+          
+          ggplot2::coord_cartesian(xlim = range(.y$BIN),
+                                   ylim = c(0, max(.x$density)
+                                            )
+                                   ) +
           labs(x = "",
                y = "") +
           ggplot2::ggtitle(
@@ -227,7 +232,7 @@ plot_continent <-
 ggsave(
   filename =
     here::here(
-      "Outputs/Figures/Change_point_density_continent_170922.tiff"
+      "Outputs/Figures/Change_point_density_continent_180922.tiff"
     ),
   plot = plot_continent,
   dpi = 200,
@@ -283,7 +288,13 @@ full_dat_density <-
   dplyr::select(Climate_zone, density_data_nested) %>% 
   unnest(density_data_nested) %>% 
   dplyr::select(-data) %>% 
-  unnest(density_data) 
+  unnest(density_data) %>% 
+  dplyr::rename(age = var) %>% 
+  add_age_bin(
+    bin_size = bin_size # [config]
+  ) %>%
+  dplyr::filter(BIN >= 0) %>%
+  tidyr::drop_na(variable) 
 
 full_dat_density$variable <- 
   factor(full_dat_density$variable, 
@@ -297,6 +308,7 @@ full_dat_density$variable <-
            "N1 divided by N0",
            "RoC")
   )
+  
 
 # Function to wrap the facet labels ('label_wrap_gen()' does not work for 
 #  multiple facets together for an unknown reason
@@ -320,20 +332,24 @@ per_climate_zone <-
   ) +
   
   ggplot2::geom_line(
-    aes(x = var,
+    aes(x = age,
         y = density,
-        colour = Climate_zone)) +
+        colour = Climate_zone)
+    ) +
+  
+  ggplot2::coord_cartesian(xlim = range(full_dat_density$BIN),
+                           ylim = c(0, max(full_dat_density$density)
+                           )
+  ) +
   
   ggplot2::scale_x_continuous(
-    limits = c(0, 12500),
-    breaks = seq(0, 12500, 3000)
+    breaks = seq(0, max(full_dat_density$BIN), 3000)
   ) +
   
   facet_rep_grid(variable ~ Climate_zone,
                  scale = "free_y",
                  labeller = my_label) +
   
-  coord_capped_cart(bottom = 'both', left = 'both') +
   ggplot2::scale_colour_manual(values = ecozone_pallete) + # [config]
   
   labs(
@@ -345,26 +361,27 @@ per_climate_zone <-
   
   theme(
     legend.position = "none",
-    strip.text.x = element_text(size = 15, angle = 0, hjust = 0),
-    strip.text.y = element_text(size = 15, angle = -90, hjust = 0),
-    axis.text = element_text(color = "black", size = 17),
+    strip.text.x = element_text(size = 17, angle = 0, hjust = 0),
+    strip.text.y = element_text(size = 17, angle = -90, hjust = 0),
+    axis.text = element_text(color = "black", size = 21),
     axis.text.x = element_text(angle = 45, hjust = 1),
-    axis.title = element_text(color = "black", size = 24),
+    axis.title = element_text(color = "black", size = 28),
     panel.border = element_blank(), 
     axis.line = element_line(),
-    panel.spacing = unit(-2.3, "lines")
+    panel.spacing.x = unit(-1.5, "lines"),
+    panel.spacing.y = unit(-2.5, "lines")
   )
 
 
 ggsave(
   filename =
     here::here(
-      "Outputs/Figures/Change_point_density_climate_zone_test_170922.tiff"
+      "Outputs/Figures/Change_point_density_climate_zone_test_180922.tiff"
     ),
   plot = per_climate_zone,
   dpi = 200,
-  width = 20,
-  height = 30,
+  width = 24,
+  height = 35,
   units = "cm",
   compress = "lzw"
 )
