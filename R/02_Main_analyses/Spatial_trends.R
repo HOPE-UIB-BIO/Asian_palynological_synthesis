@@ -32,7 +32,7 @@ source(
 data_spatial_trends <-
     readr::read_rds(
         here::here(
-            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-15.rds"
+            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-19.rds"
         )
     ) %>%
     dplyr::select(
@@ -54,7 +54,7 @@ beck_raster_file <-
 # Read the raster value-climatic zone tranlation table
 koppen_tranlation_table <-
     readr::read_csv(
-        here::here("Data/Input/Biomes_spatial//koppen_link.csv")
+        here::here("Data/Input/Biomes_spatial/koppen_link.csv")
     )
 
 
@@ -83,10 +83,7 @@ raster_df <-
         ecozone_koppen_15 = genzone_cluster,
         ecozone_koppen_5 = broadbiome
     ) %>%
- rename_climate_zone()
-
-
-
+    rename_climate_zone()
 
 # Base map (modified climate zones)
 base_map <-
