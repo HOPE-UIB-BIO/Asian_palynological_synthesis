@@ -34,7 +34,14 @@ run_models <- FALSE
 data_all_estimates <-
     readr::read_rds(
         here::here(
-            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-15.rds"
+            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-19.rds"
+        )
+    )
+
+data_change_points <-
+    readr::read_rds(
+        here::here(
+            "Data/Processed/Partitions/PAP_change_points_2022-09-19.rds"
         )
     )
 
@@ -72,7 +79,7 @@ data_roc <-
 
 
 #--------------------------------------------------------#
-# 3. Plot the temporal trends of individual sequence ----
+# 3. The temporal trends of individual sequence ----
 #--------------------------------------------------------#
 
 new_data_dataset <-
@@ -101,54 +108,19 @@ data_sequence_length <-
         bin_var_name = "BIN_max"
     )
 
-# vector with names of climate zones
-climate_zone_vec <-
-    data_all_estimates %>%
-    purrr::pluck("Climate_zone") %>%
-    unique() %>%
-    sort() %>%
-    rlang::set_names()
-
-# tables with names of variables, errors, and dataframes
-vars_table <-
-    tibble::tibble(
-        var_name = c(
-            "n0",
-            "n1",
-            "n2",
-            "dcca_axis_1",
-            "dca_axis_1",
-            "n2_divided_by_n1",
-            "n1_divided_by_n0",
-            "ROC",
-            "Peak"
-        ),
-        sel_error = c(
-            rep("mgcv::Tweedie(p = 1.1)", 5),
-            rep("mgcv::betar(link = 'logit')", 2),
-            "mgcv::Tweedie(p = 1.1)",
-            "stats::quasibinomial(link = 'logit')"
-        ),
-        sel_data = c(
-            rep("data_diversity", 7),
-            rep("data_roc", 2)
-        )
-    )
-
 
 #---------------------#
 # 3.1 fit the models -----
 #---------------------#
 
-# 3.1.A - using multiple GAMs -----
 if (
     run_models == TRUE
 ) {
     purrr::pwalk(
         .l = list(
-            vars_table$var_name, # ..1
-            vars_table$sel_error, # ..2
-            vars_table$sel_data # ..3
+            vars_table$var_name, # [config] # ..1
+            vars_table$sel_error, # [config] # ..2
+            vars_table$sel_data # [config]  ..3
         ),
         .f = ~ {
             var_sel <- ..1
@@ -168,7 +140,7 @@ if (
                     group_var = "dataset_id",
                     smooth_basis = "tp",
                     error_family = error_sel,
-                    max_k = 10
+                    max_k = max_temporal_k # [config]
                 )
 
             readr::write_rds(
@@ -186,9 +158,13 @@ if (
     )
 }
 
+#---------------------#
+# 3.2 Predict the models -----
+#---------------------#
+
 data_per_seq_pred <-
     purrr::map_dfr(
-        .x = vars_table$var_name,
+        .x = vars_table$var_name, # [config]
         .f = ~ {
             var_sel <- .x
 
@@ -232,7 +208,6 @@ data_per_seq_pred <-
 #   with the name of the variable
 # Filter out prediction! Keep only those prediction which is in the same time
 #   bin as the data (do not predict more than 1000 years away from data).
-#   In addtion, filer out all prediction with too high uncertaity (sd > 2)
 data_per_seq_pred_restruct <-
     data_per_seq_pred %>%
     dplyr::select(
@@ -244,18 +219,16 @@ data_per_seq_pred_restruct <-
                 "sd_error",
                 "lwr",
                 "upr",
-                vars_table$var_name
+                vars_table$var_name # [config]
             )
         )
     ) %>%
     tidyr::pivot_longer(
-        cols = vars_table$var_name,
+        cols = vars_table$var_name, # [config]
         names_to = "var_name",
         values_to = "var"
     ) %>%
     tidyr::drop_na(var) %>%
-    # remove the high uncertainty
-    dplyr::filter(sd_error < 2) %>%
     add_age_bin(.,
         bin_size = bin_size # [config]
     ) %>%
@@ -284,121 +257,14 @@ data_per_seq_pred_restruct <-
     ) %>%
     tidyr::unnest(data_filtered) %>%
     # Set desired order of the facets
-    dplyr::mutate(
-        var_name = dplyr::case_when(
-            var_name == "n0" ~ "N0",
-            var_name == "n1" ~ "N1",
-            var_name == "n2" ~ "N2",
-            var_name == "n2_divided_by_n1" ~ "N2 divided by N1",
-            var_name == "n1_divided_by_n0" ~ "N1 divided by N0",
-            var_name == "ROC" ~ "RoC",
-            var_name == "Peak" ~ "Peak-points",
-            var_name == "dcca_axis_1" ~ "DCCA1",
-            var_name == "dca_axis_1" ~ "DCA1",
-            TRUE ~ var_name
-        )
-    ) %>%
-    dplyr::mutate(
-        var_name = factor(var_name,
-            levels = c(
-                "DCCA1",
-                "DCA1",
-                "N0",
-                "N1",
-                "N2",
-                "N2 divided by N1",
-                "N1 divided by N0",
-                "RoC",
-                "Peak-points"
-            )
-        )
+    rename_variable_names() %>%
+    tidyr::nest(
+        cols = -var_name
     )
 
-#---------------------#
-# 3.2 Plot results -----
-#---------------------#
-
-# Data for boxplot is binned at 1000 years
-data_per_seq_pred_boxplot <-
-    data_per_seq_pred_restruct %>%
-    dplyr::group_by(dataset_id, var_name, BIN) %>%
-    dplyr::summarise(
-        .groups = "drop",
-        var = mean(var)
-    )
-
-plot_sequence_boxplot <-
-    data_per_seq_pred_boxplot %>%
-    ggplot2::ggplot(
-        ggplot2::aes(
-            x = BIN,
-            y = var
-        )
-    ) +
-    ggplot2::geom_line(
-        data = data_per_seq_pred_restruct,
-        ggplot2::aes(
-            x = age,
-            group = dataset_id
-        ),
-        color = "#2CA388",
-        alpha = 0.4
-    ) +
-    ggplot2::geom_violin(
-        ggplot2::aes(group = BIN),
-        col = NA,
-        fill = "#993300",
-        alpha = 0.5,
-    ) +
-    ggplot2::geom_boxplot(
-        ggplot2::aes(group = BIN),
-        col = "black",
-        fill = "white",
-        alpha = 1,
-        width = 250,
-        outlier.shape = NA
-    ) +
-    ggplot2::facet_wrap(
-        ~var_name,
-        scales = "free_y",
-        ncol = 2
-    ) +
-    ggplot2::theme_classic() +
-    ggplot2::ggtitle(
-        "Temporal diversity trends"
-    ) +
-    ggplot2::labs(
-        x = "Time (yr BP)",
-        y = "Estimate"
-    ) +
-    ggplot2::theme(
-        strip.text.x = ggplot2::element_text(size = 16),
-        plot.title = ggplot2::element_text(size = 16),
-        axis.text.x = ggplot2::element_text(
-            color = "black",
-            size = 16,
-            angle = 45,
-            hjust = 1
-        ),
-        axis.text.y = ggplot2::element_text(color = "black", size = 16),
-        axis.title = ggplot2::element_text(color = "black", size = 20),
-        plot.margin = ggplot2::margin(0, 0.5, 0, 0, "cm") # t, r, b, l
-    )
-
-ggplot2::ggsave(
-    plot_sequence_boxplot,
-    filename = here::here(
-        "Outputs/Figures/Temporal_squences.tiff"
-    ),
-    width = 18,
-    height = 24,
-    units = "cm",
-    dpi = 100,
-    compression = "lzw"
-)
 
 #--------------------------------------------------------#
-# 4. Plot the temporal trends of climate-zone ----
+# 4. The temporal trends of climate-zone ----
 #--------------------------------------------------------#
 
 # Fit GAM models for each variable with a single common smoother plus group-level
@@ -431,9 +297,9 @@ if (
 ) {
     purrr::pwalk(
         .l = list(
-            vars_table$var_name, # ..1
-            vars_table$sel_error, # ..2
-            vars_table$sel_data # ..3
+            vars_table$var_name, # [config] # ..1
+            vars_table$sel_error, # [config] # ..2
+            vars_table$sel_data # [config] # ..3
         ),
         .f = ~ {
             var_sel <- ..1
@@ -444,68 +310,76 @@ if (
                 paste("fitting", var_sel)
             )
 
-            data_ecozone <-
-                purrr::map(
-                    .x = climate_zone_vec,
-                    .f = ~ {
-                        sel_ecozone <- .x
+            purrr::walk(
+                .x = climate_zone_vec, # [config]
+                .f = ~ {
+                    sel_ecozone <- .x
 
-                        sel_data <-
-                            get(data_sel) %>%
-                            dplyr::filter(Climate_zone == sel_ecozone) %>%
-                            dplyr::mutate(
-                                dataset_id = as.factor(dataset_id)
+                    sel_data <-
+                        get(data_sel) %>%
+                        dplyr::filter(Climate_zone == sel_ecozone) %>%
+                        dplyr::mutate(
+                            dataset_id = as.factor(dataset_id)
+                        )
+
+                    message(sel_ecozone)
+
+                    sel_data$dataset_id %>%
+                        unique() %>%
+                        length() %>%
+                        message()
+
+                    if (
+                        nrow(sel_data) > 0
+                    ) {
+                        # Fit GAM model
+                        data_mod <-
+                            REcopol::fit_hgam(
+                                x_var = "age",
+                                y_var = var_sel,
+                                group_var = "dataset_id",
+                                smooth_basis = "tp",
+                                data_source = sel_data,
+                                error_family = error_sel,
+                                sel_k = max_temporal_k, # [config]
+                                common_trend = TRUE,
+                                use_parallel = FALSE,
+                                max_itiration = 200
                             )
 
-                        message(sel_ecozone)
 
-                        sel_data$dataset_id %>%
-                            unique() %>%
-                            length() %>%
-                            message()
+                        readr::write_rds(
+                            x = data_mod,
+                            file = paste0(
+                                here::here(
+                                    "Data/Processed/Models/Per_ecozone"
+                                ),
+                                "/",
+                                var_sel,
+                                "_",
+                                sel_ecozone,
+                                ".rds"
+                            ),
+                            compress = "gz"
+                        )
 
-                        if (
-                            nrow(sel_data) > 0
-                        ) {
-                            # Fit GAM model
-                            data_mod <-
-                                REcopol::fit_hgam(
-                                    x_var = "age",
-                                    y_var = var_sel,
-                                    group_var = "dataset_id",
-                                    smooth_basis = "tp",
-                                    data_source = sel_data,
-                                    error_family = error_sel,
-                                    sel_k = 10,
-                                    common_trend = TRUE,
-                                    use_parallel = FALSE,
-                                    max_itiration = 200
-                                )
-
-                            return(data_mod)
-                        }
+                        return(data_mod)
                     }
-                )
-
-            readr::write_rds(
-                x = data_ecozone,
-                file = paste0(
-                    here::here(
-                        "Data/Processed/Models/Per_ecozone"
-                    ),
-                    "/",
-                    var_sel,
-                    ".rds"
-                )
+                }
             )
         }
     )
 }
 
+
+#---------------------#
+# 4.2 Predict the models -----
+#---------------------#
+
 data_per_ecozone_pred <-
     purrr::map2_dfr(
-        .x = vars_table$var_name,
-        .y = vars_table$sel_data,
+        .x = vars_table$var_name, # [config]
+        .y = vars_table$sel_data, # [config]
         .f = ~ {
             var_sel <- .x
             data_sel <- .y
@@ -513,23 +387,30 @@ data_per_ecozone_pred <-
             message(var_sel)
 
             data_mod <-
-                readr::read_rds(
-                    file = paste0(
-                        here::here(
-                            "Data/Processed/Models/Per_ecozone/"
-                        ),
-                        "/",
-                        var_sel,
-                        ".rds"
+                purrr::map(
+                    .x = climate_zone_vec, # [config],
+                    .f = ~ readr::read_rds(
+                        file = paste0(
+                            here::here(
+                                "Data/Processed/Models/Per_ecozone"
+                            ),
+                            "/",
+                            var_sel,
+                            " - ",
+                            .x,
+                            ".rds"
+                        )
                     )
-                )
+                )  
 
             data_ecozone <-
                 purrr::map_dfr(
-                    .x = climate_zone_vec,
+                    .x = climate_zone_vec, # [config]
                     .id = "Climate_zone",
                     .f = ~ {
                         sel_ecozone <- .x
+
+                        message(sel_ecozone)
 
                         sel_data <-
                             get(data_sel) %>%
@@ -570,138 +451,18 @@ data_per_ecozone_pred_restruct <-
                 "age",
                 "lwr",
                 "upr",
-                vars_table$var_name
+                vars_table$var_name # [config]
             )
         )
     ) %>%
     tidyr::pivot_longer(
-        cols = vars_table$var_name,
+        cols = vars_table$var_name, # [config]
         names_to = "var_name",
         values_to = "var"
     ) %>%
-    tidyr::drop_na(var)
-
-
-#---------------------#
-# 4.2 Plot the results -----
-#---------------------#
-# Assign unique colour to each climate zone
-
-plot_estimates_per_ecozone <-
-    data_per_ecozone_pred_restruct %>%
-    # Set desired order of the facets
-    dplyr::mutate(
-        var_name = dplyr::case_when(
-            var_name == "n0" ~ "N0",
-            var_name == "n1" ~ "N1",
-            var_name == "n2" ~ "N2",
-            var_name == "n2_divided_by_n1" ~ "N2 divided by N1",
-            var_name == "n1_divided_by_n0" ~ "N1 divided by N0",
-            var_name == "ROC" ~ "RoC",
-            var_name == "Peak" ~ "Peak-points",
-            var_name == "dcca_axis_1" ~ "DCCA1",
-            var_name == "dca_axis_1" ~ "DCA1",
-            TRUE ~ var_name
-        )
-    ) %>%
-    dplyr::mutate(
-        var_name = factor(var_name,
-            levels = c(
-                "DCCA1",
-                "DCA1",
-                "N0",
-                "N1",
-                "N2",
-                "N2 divided by N1",
-                "N1 divided by N0",
-                "RoC",
-                "Peak-points"
-            )
-        )
-    ) %>%
-    ggplot2::ggplot(
-        ggplot2::aes(
-            x = age,
-            y = var
-        )
-    ) +
-    ggplot2::geom_ribbon(
-        ggplot2::aes(
-            ymin = lwr,
-            ymax = upr,
-            fill = Climate_zone,
-        ),
-        colour = NA,
-        alpha = 0.1
-    ) +
-    ggplot2::geom_line(
-        ggplot2::aes(
-            group = Climate_zone,
-            colour = Climate_zone
-        ),
-        size = 1
-    ) +
-    ggplot2::theme_classic() +
-    ggplot2::facet_wrap(
-        ~var_name,
-        ncol = 2,
-        scales = "free_y"
-    ) +
-    ggplot2::labs(
-        x = "Time (yr BP)",
-        y = "Estimate"
-    ) +
-    ggplot2::scale_fill_manual(
-        values = ecozone_pallete # [config]
-        ) +
-    ggplot2::scale_color_manual(
-        values = ecozone_pallete # [config]
-        ) +
-    ggplot2::theme(
-        strip.text.x = ggplot2::element_text(size = 14),
-        plot.title = ggplot2::element_text(
-            color = "black",
-            size = 18
-        ),
-        axis.text.x = ggplot2::element_text(
-            color = "black",
-            size = 16,
-            angle = 45,
-            hjust = 1
-        ),
-        axis.text.y = ggplot2::element_text(
-            color = "black",
-            size = 16
-        ),
-        axis.title = ggplot2::element_text(
-            color = "black",
-            size = 18
-        ),
-        legend.position = "bottom",
-        legend.key.size = unit(0.75, "cm"),
-        legend.title = ggplot2::element_text(size = 14),
-        axis.title.x = ggplot2::element_text(
-            margin = ggplot2::margin(t = 0, r = 0, b = 0, l = 0)
-        ),
-        legend.text = ggplot2::element_text(size = 11)
-    ) +
-    ggplot2::guides(
-        colour = ggplot2::guide_legend(
-            title.position = "top",
-            nrow = 1,
-            byrow = TRUE
-        )
+    tidyr::drop_na(var)  %>% 
+    tidyr::nest(
+        cols = -var_name
     )
 
-ggplot2::ggsave(
-    plot_estimates_per_ecozone,
-    filename =
-        here::here(
-            "Outputs/Figures/Temporal_ecozone.tiff"
-        ),
-    width = 18,
-    height = 24,
-    units = "cm",
-    dpi = 400,
-    compress = "lzw"
-)
+
