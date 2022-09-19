@@ -259,7 +259,7 @@ data_per_seq_pred_restruct <-
     # Set desired order of the facets
     rename_variable_names() %>%
     tidyr::nest(
-        cols = -var_name
+        merge_data = -var_name
     )
 
 
@@ -401,7 +401,7 @@ data_per_ecozone_pred <-
                             ".rds"
                         )
                     )
-                )  
+                )
 
             data_ecozone <-
                 purrr::map_dfr(
@@ -460,9 +460,127 @@ data_per_ecozone_pred_restruct <-
         names_to = "var_name",
         values_to = "var"
     ) %>%
-    tidyr::drop_na(var)  %>% 
+    tidyr::drop_na(var) %>%
+    rename_variable_names() %>%
     tidyr::nest(
-        cols = -var_name
+        merge_data = -var_name
+    )
+
+#--------------------------------------------------------#
+# 5. Temporal changes of chnage points per sequence ----
+#--------------------------------------------------------#
+
+# restructure data
+data_density_per_seq_restruct <-
+    data_all_estimates %>%
+    dplyr::select(
+        Climate_zone, dataset_id, pap_density
+    ) %>%
+    tidyr::unnest(pap_density) %>%
+    add_age_bin(
+        bin_size = bin_size # [config]
+    ) %>%
+    dplyr::filter(BIN >= 0) %>%
+    tidyr::pivot_longer(
+        cols = -c(Climate_zone, dataset_id, age, BIN),
+        names_to = "var_name",
+        values_to = "var"
+    ) %>%
+    tidyr::drop_na(var) %>%
+    dplyr::group_by(Climate_zone, dataset_id, var_name) %>%
+    dplyr::mutate(
+        var = scales::rescale(var, to = c(0, 1))
+    ) %>%
+    dplyr::ungroup() %>%
+    # Set desired order of the facets
+    rename_variable_names() %>%
+    tidyr::nest(
+        merge_data = -var_name
     )
 
 
+#--------------------------------------------------------#
+# 6. Estimate density of chnage points per ecozone ----
+#--------------------------------------------------------#
+
+data_change_points_per_ecozone <-
+    data_all_estimates %>%
+    dplyr::select(Climate_zone, dataset_id) %>%
+    dplyr::inner_join(
+        data_change_points,
+        by = "dataset_id"
+    ) %>%
+    dplyr::group_by(Climate_zone) %>%
+    dplyr::summarise(
+        .groups = "drop",
+        mvrt_cp = list(c(unlist(mvrt_cp))),
+        diversity_cp = list(dplyr::bind_rows(diversity_cp)),
+        roc_cp = list(c(unlist(roc_cp))),
+        roc_pp = list(c(unlist(roc_pp))),
+        dcca_cp = list(c(unlist(dcca_cp))),
+        dca_cp = list(c(unlist(dca_cp))),
+    )
+
+data_density_per_ecozone <-
+    get_density_for_all_vars(
+        data_source = data_change_points_per_ecozone,
+        age_table = new_data_general # [config]
+    )
+
+data_density_per_ecozone_restruct <-
+    data_density_per_ecozone %>%
+    dplyr::select(Climate_zone, pap_density) %>%
+    tidyr::unnest(pap_density) %>%
+    tidyr::pivot_longer(
+        cols = -c(Climate_zone, age),
+        names_to = "var_name",
+        values_to = "var"
+    ) %>%
+    tidyr::drop_na(var) %>%
+    dplyr::group_by(Climate_zone, var_name) %>%
+    dplyr::mutate(
+        var = scales::rescale(var, to = c(0, 1), from = c(0, max(var)))
+    ) %>%
+    dplyr::ungroup() %>%
+    # Set desired order of the facets
+    rename_variable_names() %>%
+    tidyr::nest(
+        merge_data = -var_name
+    )
+
+
+#--------------------------------------------------------#
+# 7. Merge data for plotting together ----
+#--------------------------------------------------------#
+
+data_for_plotting <-
+    dplyr::bind_rows(
+        data_per_seq_pred_restruct %>%
+            dplyr::mutate(
+                scope = "seq",
+                what = "var"
+            ),
+        data_per_ecozone_pred_restruct %>%
+            dplyr::mutate(
+                scope = "ecozone",
+                what = "var"
+            ),
+        data_density_per_seq_restruct %>%
+            dplyr::mutate(
+                scope = "seq",
+                what = "density"
+            ),
+        data_density_per_ecozone_restruct %>%
+            dplyr::mutate(
+                scope = "ecozone",
+                what = "density"
+            ),
+    )
+
+readr::write_rds(
+    data_for_plotting,
+    file = here::here(
+        "Data/Processed/Data_for_plotting/Data_for_plotting-2022-09-19.rds"
+    ),
+    compress = "gz"
+)
