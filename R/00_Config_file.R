@@ -179,32 +179,32 @@ standardise_data <- TRUE
 n_individuals_to_standardise <- 150
 tranform_to_proportions <- TRUE
 
-# 5.3. GAM Modelling 
+# 5.3. GAM Modelling
 # tables with names of variables, errors, and dataframes
 vars_table <-
-    tibble::tibble(
-        var_name = c(
-            "n0",
-            "n1",
-            "n2",
-            "dcca_axis_1",
-            "dca_axis_1",
-            "n2_divided_by_n1",
-            "n1_divided_by_n0",
-            "ROC",
-            "Peak"
-        ),
-        sel_error = c(
-            rep("mgcv::Tweedie(p = 1.1)", 5),
-            rep("mgcv::betar(link = 'logit')", 2),
-            "mgcv::Tweedie(p = 1.1)",
-            "stats::quasibinomial(link = 'logit')"
-        ),
-        sel_data = c(
-            rep("data_diversity", 7),
-            rep("data_roc", 2)
-        )
+  tibble::tibble(
+    var_name = c(
+      "n0",
+      "n1",
+      "n2",
+      "dcca_axis_1",
+      "dca_axis_1",
+      "n2_divided_by_n1",
+      "n1_divided_by_n0",
+      "ROC"
+    ),
+    sel_error = c(
+      rep("mgcv::Tweedie(p = 1.1)", 5),
+      rep("mgcv::betar(link = 'logit')", 2),
+      "mgcv::Tweedie(p = 1.1)"
+    ),
+    sel_data = c(
+      rep("data_diversity", 7),
+      "data_roc"
     )
+  )
+
+max_temporal_k <- 24
 
 #----------------------------------------------------------#
 # 6. Graphical options -----
@@ -225,7 +225,7 @@ image_width <- 16
 image_height <- 12
 image_units <- "cm"
 
-climate_zone_vec <-
+climate_zone_vec_full <-
   c(
     "Arid",
     "Cold - Dry",
@@ -237,6 +237,16 @@ climate_zone_vec <-
     "Tropical - Rainforest",
     "Tropical - Savannah"
   )
+
+climate_zone_vec <-
+  c(
+    "Arid",
+    "Cold - Dry",
+    "Cold - Without dry season",
+    "Polar",
+    "Temperate"
+  ) %>%
+  rlang::set_names()
 
 
 # define pallets
@@ -253,18 +263,10 @@ ecozone_pallete_full <-
     "#996600"
   ) %>%
   rlang::set_names(
-    nm = climate_zone_vec
+    nm = climate_zone_vec_full
   )
 
 ecozone_pallete <-
-  ecozone_pallete_full[
-    c(
-      "Arid",
-      "Cold - Dry",
-      "Cold - Without dry season",
-      "Polar",
-      "Temperate"
-    )
-  ]
+  ecozone_pallete_full[climate_zone_vec]
 
 # define common color
