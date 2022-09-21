@@ -152,7 +152,8 @@ if (
                     "/",
                     var_sel,
                     ".rds"
-                )
+                ),
+                compress = "gz"
             )
         }
     )
