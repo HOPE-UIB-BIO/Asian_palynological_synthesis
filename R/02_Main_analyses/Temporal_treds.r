@@ -3,7 +3,7 @@
 #
 #              Asian palynological synthesis
 #
-#                     Temporal trends
+#                 Temporal trends - estimation
 #
 #
 #                 K. Bhatta, O. Mottl
@@ -11,7 +11,7 @@
 #
 #----------------------------------------------------------#
 
-# Plot the estimates of Hill's diversity, DCCA1, MRT and RoC temporally
+# Estimate of Hill's diversity, DCCA1, MRT and RoC temporally
 
 #--------------------------------------------------------#
 # 1. Setup  ----
