@@ -11,6 +11,7 @@ rename_variable_names <-
                     var_name == "ROC" ~ "RoC",
                     var_name == "roc" ~ "RoC",
                     var_name == "peakpoints" ~ "Peak-points",
+                    var_name == "Peak" ~ "Peak-points",
                     var_name == "dcca_axis_1" ~ "DCCA1",
                     var_name == "dcca" ~ "DCCA1",
                     var_name == "dca_axis_1" ~ "DCA1",
