@@ -17,6 +17,7 @@
 # 1. Set up  -----
 #----------------------------------------------------------#
 
+
 library(here)
 
 # Load configuration
@@ -32,7 +33,7 @@ source(
 data_meta <-
     readr::read_rds(
         here::here(
-            "Data/Processed/Metadata/Metadata-2022-09-15.rds"
+            "Data/Processed/Metadata/Metadata-2022-09-19.rds"
         )
     )
 
@@ -46,7 +47,7 @@ data_combine_paps <-
 data_density <-
     readr::read_rds(
         here::here(
-            "Data/Processed/Partitions/PAP_density_2022-09-15.rds"
+            "Data/Processed/Partitions/PAP_density_2022-09-19.rds"
         )
     )
 
@@ -122,7 +123,7 @@ data_for_analyses <-
 readr::write_rds(
     data_for_analyses,
     file = here::here(
-        "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-15.rds"
+        "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-19.rds"
     ),
     compress = "gz"
 )

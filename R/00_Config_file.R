@@ -76,9 +76,7 @@ package_list <-
     "ggplot2",
     "ggpubr",
     "ggside",
-    "grid",
     "here",
-    "lemon",
     "mgcv",
     "purrr",
     "readr",
@@ -153,13 +151,13 @@ age_min <- 0
 age_max <- 12e3
 
 age_vec <-
-    seq(age_min, age_max, by = time_step)
+  seq(age_min, age_max, by = time_step)
 
 # data for predicting
 new_data_general <-
-    tibble::tibble(
-        age = age_vec
-    )
+  tibble::tibble(
+    age = age_vec
+  )
 
 bin_size <- 1000
 
@@ -181,6 +179,35 @@ standardise_data <- TRUE
 n_individuals_to_standardise <- 150
 tranform_to_proportions <- TRUE
 
+# 5.3. GAM Modelling
+# tables with names of variables, errors, and dataframes
+vars_table <-
+  tibble::tibble(
+    var_name = c(
+      "n0",
+      "n1",
+      "n2",
+      "dcca_axis_1",
+      "dca_axis_1",
+      "n2_divided_by_n1",
+      "n1_divided_by_n0",
+      "ROC",
+      "Peak"
+    ),
+    sel_error = c(
+      rep("mgcv::Tweedie(p = 1.1)", 5),
+      rep("mgcv::betar(link = 'logit')", 2),
+      "mgcv::Tweedie(p = 1.1)",
+      "stats::quasibinomial(link = 'logit')"
+    ),
+    sel_data = c(
+      rep("data_diversity", 7),
+      rep("data_roc", 2)
+    )
+  )
+
+max_temporal_k <- 24
+
 #----------------------------------------------------------#
 # 6. Graphical options -----
 #----------------------------------------------------------#
@@ -200,42 +227,48 @@ image_width <- 16
 image_height <- 12
 image_units <- "cm"
 
+climate_zone_vec_full <-
+  c(
+    "Arid",
+    "Cold - Dry",
+    "Cold - Without dry season",
+    "Polar",
+    "Polar - Frost",
+    "Temperate",
+    "Tropical - Monsoon",
+    "Tropical - Rainforest",
+    "Tropical - Savannah"
+  )
+
+climate_zone_vec <-
+  c(
+    "Arid",
+    "Cold - Dry",
+    "Cold - Without dry season",
+    "Polar",
+    "Temperate"
+  ) %>%
+  rlang::set_names()
+
+
 # define pallets
 ecozone_pallete_full <-
-    c(
-        "#FFCC99",
-        "#993300",
-        "#FF6600",
-        "#3399FF",
-        "#999999",
-        "#00CCCC",
-        "#99CC00",
-        "#006600",
-        "#996600"
-    ) %>%
-    rlang::set_names(
-        nm = c(
-            "Arid",
-            "Cold_Dry",
-            "Cold_Without_dry_season",
-            "Polar",
-            "Polar_Frost",
-            "Temperate",
-            "Tropical_Monsoon",
-            "Tropical_Rainforest",
-            "Tropical_Savannah"
-        )
-    )
+  c(
+    "#FFCC99",
+    "#993300",
+    "#FF6600",
+    "#3399FF",
+    "#999999",
+    "#00CCCC",
+    "#99CC00",
+    "#006600",
+    "#996600"
+  ) %>%
+  rlang::set_names(
+    nm = climate_zone_vec_full
+  )
 
 ecozone_pallete <-
-    ecozone_pallete_full[
-        c(
-            "Arid",
-            "Cold_Dry",
-            "Cold_Without_dry_season",
-            "Polar",
-            "Temperate"
-        )
-    ]
+  ecozone_pallete_full[climate_zone_vec]
 
 # define common color

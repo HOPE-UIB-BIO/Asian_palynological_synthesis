@@ -97,9 +97,15 @@ data_roc_cp <-
                 age_var = "Age"
             ) %>%
                 purrr::pluck("rpart_change_points")
+        ),
+        roc_pp = purrr::map(
+            .x = PAP_roc,
+            .f = ~ .x %>%
+                dplyr::filter(Peak == TRUE) %>%
+                purrr::pluck("Age")
         )
     ) %>%
-    dplyr::select(dataset_id, roc_cp)
+    dplyr::select(dataset_id, roc_cp, roc_pp)
 
 # turnover
 data_turnover_cp <-
@@ -162,7 +168,7 @@ data_change_points <-
 readr::write_rds(
     data_change_points,
     here::here(
-        "Data/Processed/Partitions/PAP_change_points_2022-09-14.rds"
+        "Data/Processed/Partitions/PAP_change_points_2022-09-19.rds"
     ),
     compress = "gz"
 )

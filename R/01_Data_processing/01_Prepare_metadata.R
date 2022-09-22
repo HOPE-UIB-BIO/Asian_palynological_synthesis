@@ -47,19 +47,7 @@ data_meta <-
     # single dataset of "Tropical_Monsoon" zone is removed
     dplyr::filter(!ecozone_koppen_15 == "Tropical_Monsoon") %>% # 205 datasets
     # Modify the climate zones as suggested by John
-    dplyr::mutate(
-        Climate_zone = dplyr::case_when(
-            ecozone_koppen_15 == "Arid_Desert" ~ "Arid",
-            ecozone_koppen_15 == "Arid_Steppe" ~ "Arid",
-            ecozone_koppen_15 == "Cold_Dry_Summer" ~ "Cold_Dry",
-            ecozone_koppen_15 == "Cold_Dry_Winter" ~ "Cold_Dry",
-            ecozone_koppen_15 == "Temperate_Dry_Summer" ~ "Temperate",
-            ecozone_koppen_15 == "Temperate_Dry_Winter" ~ "Temperate",
-            ecozone_koppen_15 == "Temperate_Without_dry_season" ~ "Temperate",
-            ecozone_koppen_15 == "Polar_Tundra" ~ "Polar",
-            TRUE ~ ecozone_koppen_15
-        )
-    ) %>%
+    rename_climate_zone() %>%
     dplyr::select(
         dataset_id, handle, sitename,
         long, lat, altitude,
@@ -80,5 +68,5 @@ readr::write_csv(
 
 readr::write_rds(
      x = data_meta,
-    file = here::here("Data/Processed/Metadata/Metadata-2022-09-15.rds")
+    file = here::here("Data/Processed/Metadata/Metadata-2022-09-19.rds")
 )

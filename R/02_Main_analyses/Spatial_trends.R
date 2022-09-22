@@ -32,7 +32,7 @@ source(
 data_spatial_trends <-
     readr::read_rds(
         here::here(
-            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-15.rds"
+            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-19.rds"
         )
     ) %>%
     dplyr::select(
@@ -49,12 +49,12 @@ beck_raster_file <-
         here::here(
             "Data/Input/Biomes_spatial/Beck_KG_V1_present_0p083.tif"
         )
-    )    
+    )
 
 # Read the raster value-climatic zone tranlation table
 koppen_tranlation_table <-
     readr::read_csv(
-        here::here("Data/Input/Biomes_spatial//koppen_link.csv")
+        here::here("Data/Input/Biomes_spatial/koppen_link.csv")
     )
 
 
@@ -83,22 +83,7 @@ raster_df <-
         ecozone_koppen_15 = genzone_cluster,
         ecozone_koppen_5 = broadbiome
     ) %>%
-    # Modify the climate zones as suggested by John
-    dplyr::mutate(
-        Climate_zone = dplyr::case_when(
-            ecozone_koppen_15 == "Arid_Desert" ~ "Arid",
-            ecozone_koppen_15 == "Arid_Steppe" ~ "Arid",
-            ecozone_koppen_15 == "Cold_Dry_Summer" ~ "Cold_Dry",
-            ecozone_koppen_15 == "Cold_Dry_Winter" ~ "Cold_Dry",
-            ecozone_koppen_15 == "Temperate_Dry_Summer" ~ "Temperate",
-            ecozone_koppen_15 == "Temperate_Dry_Winter" ~ "Temperate",
-            ecozone_koppen_15 == "Temperate_Without_dry_season" ~ "Temperate",
-            ecozone_koppen_15 == "Polar_Tundra" ~ "Polar",
-            TRUE ~ ecozone_koppen_15
-        )
-    )
-
-
+    rename_climate_zone()
 
 # Base map (modified climate zones)
 base_map <-
@@ -161,42 +146,42 @@ base_map <-
     )
 
 base_map_seq_hist <-
-  base_map +
-   ggplot2::annotation_custom(
-    grob =  ggplot2::ggplotGrob(
-      ggpubr::gghistogram(
-        data_spatial_trends$long,
-        fill = "#2CA388",
-        color = "#2CA388",
-        binwidth = 5,
-        size = 0.1,
-        alpha = 0.7
-      ) +
-        ggpubr::theme_transparent()
-    ),
-    xmin = 17,
-    xmax = 180,
-    ymin = -2.8,
-    ymax = 13
-  ) +
-   ggplot2::annotation_custom(
-    grob =  ggplot2::ggplotGrob(
-      ggpubr::gghistogram(
-        data_spatial_trends$lat,
-        fill = "#2CA388",
-        color = "#2CA388",
-        binwidth = 5,
-        size = 0.1,
-        alpha = 0.7
-      ) +
-        ggpubr::rotate() +
-        ggpubr::theme_transparent()
-    ),
-    xmin = 18.5,
-    xmax = 34,
-    ymin = 0.3,
-    ymax = 85
-  )
+    base_map +
+    ggplot2::annotation_custom(
+        grob = ggplot2::ggplotGrob(
+            ggpubr::gghistogram(
+                data_spatial_trends$long,
+                fill = "#2CA388",
+                color = "#2CA388",
+                binwidth = 5,
+                size = 0.1,
+                alpha = 0.7
+            ) +
+                ggpubr::theme_transparent()
+        ),
+        xmin = 17,
+        xmax = 180,
+        ymin = -2.8,
+        ymax = 13
+    ) +
+    ggplot2::annotation_custom(
+        grob = ggplot2::ggplotGrob(
+            ggpubr::gghistogram(
+                data_spatial_trends$lat,
+                fill = "#2CA388",
+                color = "#2CA388",
+                binwidth = 5,
+                size = 0.1,
+                alpha = 0.7
+            ) +
+                ggpubr::rotate() +
+                ggpubr::theme_transparent()
+        ),
+        xmin = 18.5,
+        xmax = 34,
+        ymin = 0.3,
+        ymax = 85
+    )
 
 #--------------------------------------------------------#
 # C. turnover ----
@@ -241,7 +226,7 @@ ggplot2::ggsave(
 )
 
 #--------------------------------------------------------#
-# D.  MVRT partitions 
+# D.  MVRT partitions
 #--------------------------------------------------------#
 
 plot_mrt <-
