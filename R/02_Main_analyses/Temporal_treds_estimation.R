@@ -3,7 +3,7 @@
 #
 #              Asian palynological synthesis
 #
-#                     Temporal trends
+#                 Temporal trends - estimation
 #
 #
 #                 K. Bhatta, O. Mottl
@@ -11,7 +11,7 @@
 #
 #----------------------------------------------------------#
 
-# Plot the estimates of Hill's diversity, DCCA1, MRT and RoC temporally
+# Estimate of Hill's diversity, DCCA1, MRT and RoC temporally
 
 #--------------------------------------------------------#
 # 1. Setup  ----
@@ -581,7 +581,7 @@ data_for_plotting <-
 readr::write_rds(
     data_for_plotting,
     file = here::here(
-        "Data/Processed/Data_for_plotting/Data_for_plotting-2022-09-19.rds"
+        "Data/Processed/Data_for_temporal_plotting/Data_for_temporal_plotting-2022-09-19.rds"
     ),
     compress = "gz"
 )
