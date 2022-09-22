@@ -191,16 +191,18 @@ vars_table <-
       "dca_axis_1",
       "n2_divided_by_n1",
       "n1_divided_by_n0",
-      "ROC"
+      "ROC",
+      "Peak"
     ),
     sel_error = c(
       rep("mgcv::Tweedie(p = 1.1)", 5),
       rep("mgcv::betar(link = 'logit')", 2),
-      "mgcv::Tweedie(p = 1.1)"
+      "mgcv::Tweedie(p = 1.1)",
+      "stats::quasibinomial(link = 'logit')"
     ),
     sel_data = c(
       rep("data_diversity", 7),
-      "data_roc"
+      rep("data_roc", 2)
     )
   )
 
