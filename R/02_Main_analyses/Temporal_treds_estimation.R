@@ -258,7 +258,7 @@ data_per_seq_pred_restruct <-
     ) %>%
     tidyr::unnest(data_filtered) %>%
     # Set desired order of the facets
-    rename_variable_names() %>%
+   rename_variable_names() %>%
     tidyr::nest(
         merge_data = -var_name
     )
@@ -397,7 +397,7 @@ data_per_ecozone_pred <-
                             ),
                             "/",
                             var_sel,
-                            " - ",
+                            "_",
                             .x,
                             ".rds"
                         )
@@ -581,7 +581,8 @@ data_for_plotting <-
 readr::write_rds(
     data_for_plotting,
     file = here::here(
-        "Data/Processed/Data_for_temporal_plotting/Data_for_temporal_plotting-2022-09-19.rds"
+        "Data/Processed/Data_for_temporal_plotting/",
+        "Data_for_temporal_plotting-2022-09-22.rds"
     ),
     compress = "gz"
 )
