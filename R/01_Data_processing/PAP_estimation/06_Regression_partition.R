@@ -31,7 +31,7 @@ source(
 data_combine_paps <-
     readr::read_rds(
         here::here(
-            "Data/Processed/PAP_all/pap_all_2022-09-14.rds"
+            "Data/Processed/PAP_all/pap_all_2022-09-29.rds"
         )
     )
 
@@ -124,23 +124,9 @@ data_turnover_cp <-
                     age_var = "age"
                 ) %>%
                 purrr::pluck("rpart_change_points")
-        ),
-        dca_cp = purrr::map2(
-            .x = dca_scores,
-            .y = levels,
-            .f = ~ dplyr::inner_join(
-                .x, .y,
-                by = "sample_id"
-            ) %>%
-                REcopol::regression_partition(
-                    data_source = .,
-                    var = "dca1",
-                    age_var = "age"
-                ) %>%
-                purrr::pluck("rpart_change_points")
         )
     ) %>%
-    dplyr::select(dataset_id, dcca_cp, dca_cp)
+    dplyr::select(dataset_id, dcca_cp)
 
 #----------------------------------------------------------#
 # 4. Save  -----
@@ -168,7 +154,7 @@ data_change_points <-
 readr::write_rds(
     data_change_points,
     here::here(
-        "Data/Processed/Partitions/PAP_change_points_2022-09-19.rds"
+        "Data/Processed/Partitions/PAP_change_points_2022-09-29.rds"
     ),
     compress = "gz"
 )

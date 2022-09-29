@@ -52,7 +52,7 @@ data_roc <-
 data_turnover <-
     readr::read_rds(
         here::here(
-            "Data/Processed/Turnover/Data_turnover_2022-09-14.rds"
+            "Data/Processed/Turnover/Data_turnover_2022-09-29.rds"
         )
     )
 
@@ -111,8 +111,7 @@ data_combine_paps <-
                 PAP_diversity, # ..1
                 mvrt_partitions, # ..2
                 dcca_scores, # ..3
-                dca_scores, # ..4
-                levels # ..5
+                levels # ..4
             ),
             .f = ~ dplyr::inner_join(
                 ..1,
@@ -124,9 +123,6 @@ data_combine_paps <-
                     by = "sample_id"
                 ) %>%
                 dplyr::inner_join(..4,
-                    by = "sample_id"
-                ) %>%
-                dplyr::inner_join(..5,
                     by = "sample_id"
                 ) %>%
                 purrr::pluck("sample_id")
@@ -146,10 +142,6 @@ data_combine_paps <-
         id_vec = "valid_sample_id"
     ) %>%
     subset_by_vector(
-        var_name = "dca_scores",
-        id_vec = "valid_sample_id"
-    ) %>%
-    subset_by_vector(
         var_name = "levels",
         id_vec = "valid_sample_id"
     )  %>% 
@@ -161,7 +153,7 @@ data_combine_paps <-
 readr::write_rds(
     data_combine_paps,
     here::here(
-        "Data/Processed/PAP_all/pap_all_2022-09-14.rds"
+        "Data/Processed/PAP_all/pap_all_2022-09-29.rds"
     ),
     compress = "gz"
 )

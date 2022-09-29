@@ -17,7 +17,6 @@
 # 1. Set up  -----
 #----------------------------------------------------------#
 
-
 library(here)
 
 # Load configuration
@@ -40,14 +39,14 @@ data_meta <-
 data_combine_paps <-
     readr::read_rds(
         here::here(
-            "Data/Processed/PAP_all/pap_all_2022-09-14.rds"
+            "Data/Processed/PAP_all/pap_all_2022-09-29.rds"
         )
     )
 
 data_density <-
     readr::read_rds(
         here::here(
-            "Data/Processed/Partitions/PAP_density_2022-09-19.rds"
+            "Data/Processed/Partitions/PAP_density_2022-09-29.rds"
         )
     )
 
@@ -73,8 +72,7 @@ data_for_analyses <-
             .l = list(
                 levels, # ..1
                 PAP_diversity, # ..2
-                dcca_scores, # ..3
-                dca_scores # ..4
+                dcca_scores # ..3
             ),
             .f = ~ ..1 %>%
                 dplyr::select(
@@ -92,15 +90,7 @@ data_for_analyses <-
                             dcca_axis_1 = axis_1
                         ),
                     by = "sample_id"
-                ) %>%
-                dplyr::inner_join(
-                    ..4 %>%
-                        dplyr::select(
-                            sample_id,
-                            dca_axis_1 = dca1
-                        ),
-                    by = "sample_id"
-                )
+                ) 
         )
     ) %>%
     dplyr::select(
@@ -108,7 +98,6 @@ data_for_analyses <-
         long, lat,
         Climate_zone,
         dcca_grad_length,
-        dca_grad_length,
         mvrt_groups_n,
         PAP_merge,
         PAP_roc,
@@ -123,7 +112,7 @@ data_for_analyses <-
 readr::write_rds(
     data_for_analyses,
     file = here::here(
-        "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-19.rds"
+        "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-29.rds"
     ),
     compress = "gz"
 )
