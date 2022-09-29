@@ -34,14 +34,14 @@ run_models <- FALSE
 data_all_estimates <-
     readr::read_rds(
         here::here(
-            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-19.rds"
+            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-29.rds"
         )
     )
 
 data_change_points <-
     readr::read_rds(
         here::here(
-            "Data/Processed/Partitions/PAP_change_points_2022-09-19.rds"
+            "Data/Processed/Partitions/PAP_change_points_2022-09-29.rds"
         )
     )
 
@@ -58,8 +58,7 @@ data_diversity <-
     dplyr::filter(BIN >= 0) %>%
     dplyr::mutate(
         # adjust values so small that they are smaller than zero
-        dcca_axis_1 = ifelse(dcca_axis_1 < 0, 0, dcca_axis_1),
-        dca_axis_1 = ifelse(dca_axis_1 < 0, 0, dca_axis_1)
+        dcca_axis_1 = ifelse(dcca_axis_1 < 0, 0, dcca_axis_1)
     )
 
 # RoC estimates
@@ -79,15 +78,8 @@ data_roc <-
 
 
 #--------------------------------------------------------#
-# 3. The temporal trends of individual sequence ----
+# 3. Variable - temporal trends - individual sequence ----
 #--------------------------------------------------------#
-
-new_data_dataset <-
-    expand.grid(
-        age = age_vec,
-        dataset_id = unique(data_all_estimates$dataset_id)
-    ) %>%
-    tibble::as_tibble()
 
 # length of each sequences
 data_sequence_length <-
@@ -110,7 +102,7 @@ data_sequence_length <-
 
 
 #---------------------#
-# 3.1 fit the models -----
+# - 3.1 fit the models -----
 #---------------------#
 
 if (
@@ -160,7 +152,7 @@ if (
 }
 
 #---------------------#
-# 3.2 Predict the models -----
+# - 3.2 Predict the models -----
 #---------------------#
 
 data_per_seq_pred <-
@@ -190,7 +182,7 @@ data_per_seq_pred <-
                         .x = mod,
                         .f = ~ REcopol::predic_model(
                             model_source = .x,
-                            data_source = new_data_general
+                            data_source = new_data_general # [config]
                         ) %>%
                             dplyr::rename(
                                 !!var_sel := fit
@@ -258,39 +250,18 @@ data_per_seq_pred_restruct <-
     ) %>%
     tidyr::unnest(data_filtered) %>%
     # Set desired order of the facets
-   rename_variable_names() %>%
+    rename_variable_names() %>%
     tidyr::nest(
         merge_data = -var_name
     )
 
 
 #--------------------------------------------------------#
-# 4. The temporal trends of climate-zone ----
+# 4. Variable - temporal trends - climate-zone ----
 #--------------------------------------------------------#
 
-# Fit GAM models for each variable with a single common smoother plus group-level
-#  smothers with diffring wiggliness (see Pedersen et al. 2019. Hierarchical
-#  generalized additive models in ecology: an introduction with mgcv).
-
-# 1. Explicitely include a random effect for the intercept (bs = "re" term).
-
-# 2. Specify "m = 1" instead of "m = 2" for the group-level smoothers, which means
-#  the marginal thin plate regression splines (TPRS) basis for this term will
-#  penalize the squared  first derivative of the function, rather than the second
-#  derivative. This, also, reduces colinearity between the global smoother and the
-#  group-specific terms which occasionally leads to high uncertainty around the
-#  global smoother. TPRS with m = 1 have a more restricted null space than m = 2
-#  smoothers, so should not be as collinear with the global smoother.
-
-# 3. Use restricted maximum likelihood (REML) [method = "REML"] to estimate model
-#  coefficients and smoothing parameters, which gives a resonable fit to the data.
-
-# 4. In the factorial random effect smoother (bs="re"), 'k' equals number of levels
-#  in the the grouping variable. There are 5 climate zones, so k = 5.
-#------------------------------------------------------------------------------#
-
 #---------------------#
-# 4.1 fit the models -----
+# - 4.1 fit the models -----
 #---------------------#
 
 if (
@@ -374,7 +345,7 @@ if (
 
 
 #---------------------#
-# 4.2 Predict the models -----
+# - 4.2 Predict the models -----
 #---------------------#
 
 data_per_ecozone_pred <-
@@ -424,7 +395,7 @@ data_per_ecozone_pred <-
                         data_pred <-
                             REcopol::predic_model(
                                 model_source = data_mod[[sel_ecozone]],
-                                data_source = new_data_general %>%
+                                data_source = new_data_general %>% # [config]
                                     dplyr::mutate(
                                         dataset_id = sel_data$dataset_id[1]
                                     ),
@@ -468,27 +439,161 @@ data_per_ecozone_pred_restruct <-
     )
 
 #--------------------------------------------------------#
-# 5. Temporal changes of chnage points per sequence ----
+# 5. Variable - temporal trends - continent ----
 #--------------------------------------------------------#
+
+#---------------------#
+# - 5.1 fit the models -----
+#---------------------#
+
+if (
+    run_models == TRUE
+) {
+    purrr::pwalk(
+        .l = list(
+            vars_table$var_name, # [config] # ..1
+            vars_table$sel_error, # [config] # ..2
+            vars_table$sel_data # [config] # ..3
+        ),
+        .f = ~ {
+            var_sel <- ..1
+            error_sel <- ..2
+            data_sel <- ..3
+
+            message(
+                paste("fitting", var_sel)
+            )
+
+            # Fit GAM model
+            data_mod <-
+                REcopol::fit_hgam(
+                    x_var = "age",
+                    y_var = var_sel,
+                    group_var = "dataset_id",
+                    smooth_basis = "tp",
+                    data_source = get(data_sel),
+                    error_family = error_sel,
+                    sel_k = max_temporal_k, # [config]
+                    common_trend = TRUE,
+                    use_parallel = FALSE,
+                    max_itiration = 200
+                )
+
+            readr::write_rds(
+                x = data_mod,
+                file = paste0(
+                    here::here(
+                        "Data/Processed/Models/Per_continent"
+                    ),
+                    "/",
+                    var_sel,
+                    ".rds"
+                ),
+                compress = "gz"
+            )
+        }
+    )
+}
+
+#---------------------#
+# - 5.2 Predict the models -----
+#---------------------#
+
+data_per_continent_pred <-
+    purrr::map_2dfr(
+        .x = vars_table$var_name, # [config]
+        .y = vars_table$sel_data, # [config]
+        .f = ~ {
+            var_sel <- .x
+            data_sel <- .y
+
+            message(var_sel)
+
+            data_mod <-
+                readr::read_rds(
+                    file = paste0(
+                        here::here(
+                            "Data/Processed/Models/Per_continent/"
+                        ),
+                        "/",
+                        var_sel,
+                        ".rds"
+                    )
+                )
+
+            sel_data <-
+                get(data_sel)
+
+            # Predict the model
+            data_pred <-
+                REcopol::predic_model(
+                    model_source = data_mod,
+                    data_source = new_data_general %>% # [config]
+                        dplyr::mutate(
+                            dataset_id = sel_data$dataset_id[1]
+                        ),
+                    exclude = data_mod %>%
+                        gratia::smooths() %>%
+                        stringr::str_subset(., "dataset_id")
+                ) %>%
+                dplyr::rename(
+                    !!var_sel := fit
+                )
+
+            return(data_pred)
+        }
+    )
+
+data_per_continent_pred_restruct <-
+    data_per_continent_pred %>%
+    dplyr::select(
+        dplyr::any_of(
+            c(
+                "age",
+                "lwr",
+                "upr",
+                vars_table$var_name # [config]
+            )
+        )
+    ) %>%
+    tidyr::pivot_longer(
+        cols = vars_table$var_name, # [config]
+        names_to = "var_name",
+        values_to = "var"
+    ) %>%
+    tidyr::drop_na(var) %>%
+    rename_variable_names() %>%
+    tidyr::nest(
+        merge_data = -var_name
+    )
+
+
+#--------------------------------------------------------#
+# 6. Density - temporal trends - sequence ----
+#--------------------------------------------------------#
+
+data_cp_density_merge <-
+    get_density_for_all_vars(
+        data_source = data_change_points,
+        age_table = new_data_general # [config]
+    ) %>%
+    dplyr::select(dataset_id, pap_density)
 
 # restructure data
 data_density_per_seq_restruct <-
-    data_all_estimates %>%
-    dplyr::select(
-        Climate_zone, dataset_id, pap_density
-    ) %>%
+    data_cp_density_merge %>%
     tidyr::unnest(pap_density) %>%
     add_age_bin(
         bin_size = bin_size # [config]
     ) %>%
     dplyr::filter(BIN >= 0) %>%
     tidyr::pivot_longer(
-        cols = -c(Climate_zone, dataset_id, age, BIN),
+        cols = -c(dataset_id, age, BIN),
         names_to = "var_name",
         values_to = "var"
     ) %>%
     tidyr::drop_na(var) %>%
-    dplyr::group_by(Climate_zone, dataset_id, var_name) %>%
+    dplyr::group_by(dataset_id, var_name) %>%
     dplyr::mutate(
         var = scales::rescale(var, to = c(0, 1))
     ) %>%
@@ -501,7 +606,7 @@ data_density_per_seq_restruct <-
 
 
 #--------------------------------------------------------#
-# 6. Estimate density of chnage points per ecozone ----
+# 7. Density - temporal trends - climate-zone ----
 #--------------------------------------------------------#
 
 data_change_points_per_ecozone <-
@@ -518,8 +623,7 @@ data_change_points_per_ecozone <-
         diversity_cp = list(dplyr::bind_rows(diversity_cp)),
         roc_cp = list(c(unlist(roc_cp))),
         roc_pp = list(c(unlist(roc_pp))),
-        dcca_cp = list(c(unlist(dcca_cp))),
-        dca_cp = list(c(unlist(dca_cp))),
+        dcca_cp = list(c(unlist(dcca_cp)))
     )
 
 data_density_per_ecozone <-
@@ -551,30 +655,82 @@ data_density_per_ecozone_restruct <-
 
 
 #--------------------------------------------------------#
-# 7. Merge data for plotting together ----
+# 8. Density - temporal trends - continent ----
+#--------------------------------------------------------#
+
+data_change_points_per_continent <-
+    data_change_points %>%
+    dplyr::summarise(
+        .groups = "drop",
+        mvrt_cp = list(c(unlist(mvrt_cp))),
+        diversity_cp = list(dplyr::bind_rows(diversity_cp)),
+        roc_cp = list(c(unlist(roc_cp))),
+        roc_pp = list(c(unlist(roc_pp))),
+        dcca_cp = list(c(unlist(dcca_cp)))
+    )
+
+data_density_per_continent <-
+    get_density_for_all_vars(
+        data_source = data_change_points_per_continent,
+        age_table = new_data_general # [config]
+    )
+
+data_density_per_continent_restruct <-
+    data_density_per_continent %>%
+    dplyr::select(pap_density) %>%
+    tidyr::unnest(pap_density) %>%
+    tidyr::pivot_longer(
+        cols = -c(age),
+        names_to = "var_name",
+        values_to = "var"
+    ) %>%
+    tidyr::drop_na(var) %>%
+    dplyr::group_by(var_name) %>%
+    dplyr::mutate(
+        var = scales::rescale(var, to = c(0, 1), from = c(0, max(var)))
+    ) %>%
+    dplyr::ungroup() %>%
+    # Set desired order of the facets
+    rename_variable_names() %>%
+    tidyr::nest(
+        merge_data = -var_name
+    )
+
+#--------------------------------------------------------#
+# 9. Merge data for plotting together ----
 #--------------------------------------------------------#
 
 data_for_plotting <-
     dplyr::bind_rows(
         data_per_seq_pred_restruct %>%
             dplyr::mutate(
-                scope = "seq",
-                what = "var"
+                grain = "seq",
+                var_type = "var"
             ),
         data_per_ecozone_pred_restruct %>%
             dplyr::mutate(
-                scope = "ecozone",
-                what = "var"
+                grain = "ecozone",
+                var_type = "var"
+            ),
+        data_per_continent_pred_restruct %>%
+            dplyr::mutate(
+                grain = "continent",
+                var_type = "var"
             ),
         data_density_per_seq_restruct %>%
             dplyr::mutate(
-                scope = "seq",
-                what = "density"
+                grain = "seq",
+                var_type = "density"
             ),
         data_density_per_ecozone_restruct %>%
             dplyr::mutate(
-                scope = "ecozone",
-                what = "density"
+                grain = "ecozone",
+                var_type = "density"
+            ),
+        data_density_per_continent_restruct %>%
+            dplyr::mutate(
+                grain = "continent",
+                var_type = "density"
             ),
     )
 
