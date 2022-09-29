@@ -70,13 +70,6 @@ get_density_for_all_vars <-
                         age_table = age_table
                     )
                 ),
-                dca_cp_density = purrr::map(
-                    .x = dca_cp,
-                    .f = ~ get_density_subset(
-                        data_source = .x,
-                        age_table = age_table
-                    )
-                ),
                 n0_density = purrr::map(
                     .x = diversity_cp,
                     .f = ~ .x %>%
@@ -138,12 +131,11 @@ get_density_for_all_vars <-
                         roc_cp_density, # ..2
                         roc_pp_denisty, # ..3
                         dcca_cp_density, # ..4
-                        dca_cp_density, # ..5
-                        n0_density, # ..6
-                        n1_density, # ..7
-                        n2_density, # ..8
-                        n1_divided_by_n0_density, # ..9
-                        n2_divided_by_n1_density # ..10
+                        n0_density, # ..5
+                        n1_density, # ..6
+                        n2_density, # ..7
+                        n1_divided_by_n0_density, # ..8
+                        n2_divided_by_n1_density # ..9
                     ),
                     .f = ~ age_table %>%
                         dplyr::left_join(
@@ -182,7 +174,7 @@ get_density_for_all_vars <-
                             ..5 %>%
                                 dplyr::select(
                                     age,
-                                    dca = density
+                                    n0 = density
                                 ),
                             by = "age"
                         ) %>%
@@ -190,7 +182,7 @@ get_density_for_all_vars <-
                             ..6 %>%
                                 dplyr::select(
                                     age,
-                                    n0 = density
+                                    n1 = density
                                 ),
                             by = "age"
                         ) %>%
@@ -198,7 +190,7 @@ get_density_for_all_vars <-
                             ..7 %>%
                                 dplyr::select(
                                     age,
-                                    n1 = density
+                                    n2 = density
                                 ),
                             by = "age"
                         ) %>%
@@ -206,20 +198,12 @@ get_density_for_all_vars <-
                             ..8 %>%
                                 dplyr::select(
                                     age,
-                                    n2 = density
-                                ),
-                            by = "age"
-                        ) %>%
-                        dplyr::left_join(
-                            ..9 %>%
-                                dplyr::select(
-                                    age,
                                     n1_divided_by_n0 = density
                                 ),
                             by = "age"
                         ) %>%
                         dplyr::left_join(
-                            ..10 %>%
+                            ..9 %>%
                                 dplyr::select(
                                     age,
                                     n2_divided_by_n1 = density
