@@ -43,25 +43,14 @@ data_combine_paps <-
         )
     )
 
-data_density <-
-    readr::read_rds(
-        here::here(
-            "Data/Processed/Partitions/PAP_density_2022-09-29.rds"
-        )
-    )
-
 #----------------------------------------------------------#
 # 3. Prepare dataset -----
 #----------------------------------------------------------#
 
 data_join <-
-    data_meta %>%
     dplyr::left_join(
+        data_meta,
         data_combine_paps,
-        by = "dataset_id"
-    ) %>%
-    dplyr::left_join(
-        data_density,
         by = "dataset_id"
     )
 
@@ -90,7 +79,7 @@ data_for_analyses <-
                             dcca_axis_1 = axis_1
                         ),
                     by = "sample_id"
-                ) 
+                )
         )
     ) %>%
     dplyr::select(
@@ -100,8 +89,7 @@ data_for_analyses <-
         dcca_grad_length,
         mvrt_groups_n,
         PAP_merge,
-        PAP_roc,
-        pap_density
+        PAP_roc
     )
 
 
