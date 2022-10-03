@@ -68,21 +68,28 @@ data_for_plotting_with_limits <-
         by = c("var_name", "var_type")
     )
 
+#--------------------------------------------------------#
+# 3. Plot all variables in a grid ----
+#--------------------------------------------------------#
+
+sel_var_vec <-
+    c(
+        "N0",
+        "N1",
+        "N2",
+        "N1 divided by N0",
+        "N2 divided by N1",
+        "DCCA1",
+        "RoC",
+        "MVRT"
+    )
+
 fig_all_grid <-
     plot_temporal_grid(
         data_source = data_for_plotting_with_limits,
-        sel_vars = c(
-            "N0",
-            "N1",
-            "N2",
-            "N1 divided by N0",
-            "N2 divided by N1",
-            "DCCA1",
-            "RoC",
-            "MVRT"
-        ),
+        sel_vars = sel_var_vec,
         use_limits = TRUE,
-        plot_rmse = FALSE,
+        plot_rmse = TRUE,
         plot_summary = FALSE,
         def_color = "#2CA388",
         def_of_colo = "#A3882C",
@@ -90,5 +97,25 @@ fig_all_grid <-
         def_text_size = 16
     )
 
+
+# View results
 grid::grid.newpage()
 grid::grid.draw(fig_all_grid)
+
+
+#--------------------------------------------------------#
+# 4. Save ----
+#--------------------------------------------------------#
+
+ggplot2::ggsave(
+    plot = fig_all_grid,
+    filename =
+        here::here(
+            "Outputs/Figures/Temporal_trends_wip.tiff"
+        ),
+    width = ((2 * 3) + 1) * set_fig_width, # 2 types , 3 grains, +1 is for label
+    height = (length(sel_var_vec) + 1) * set_fig_height, # +1 is for label
+    units = "cm",
+    dpi = 400,
+    compress = "lzw"
+)
