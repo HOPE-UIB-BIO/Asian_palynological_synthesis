@@ -92,12 +92,15 @@ data_sequence_length <-
     add_age_bin(
         .,
         age_var_name = "age_min",
-        bin_var_name = "BIN_min"
+        bin_var_name = "BIN_min",
+        bin_size = time_step # [config]
     ) %>%
     add_age_bin(
         .,
         age_var_name = "age_max",
-        bin_var_name = "BIN_max"
+        bin_var_name = "BIN_max",
+        bin_size = time_step, # [config]
+        sel_method = "forward"
     )
 
 
@@ -200,7 +203,7 @@ data_per_seq_pred <-
 # restructure the data so all values are in one column and there is a column
 #   with the name of the variable
 # Filter out prediction! Keep only those prediction which is in the same time
-#   bin as the data (do not predict more than 1000 years away from data).
+#   bin as the data (do not predict more than 100 years away from data).
 data_per_seq_pred_restruct <-
     data_per_seq_pred %>%
     dplyr::select(
@@ -222,11 +225,8 @@ data_per_seq_pred_restruct <-
         values_to = "var"
     ) %>%
     tidyr::drop_na(var) %>%
-    add_age_bin(.,
-        bin_size = bin_size # [config]
-    ) %>%
     tidyr::nest(
-        data = c(age, BIN, lwr, upr, sd_error, var_name, var)
+        data = c(age, lwr, upr, sd_error, var_name, var)
     ) %>%
     dplyr::left_join(
         data_sequence_length,
@@ -237,7 +237,7 @@ data_per_seq_pred_restruct <-
             .l = list(data, BIN_min, BIN_max),
             .f = ~ ..1 %>%
                 dplyr::filter(
-                    BIN >= ..2 & BIN <= ..3
+                    age >= ..2 & age <= ..3
                 )
         )
     ) %>%
@@ -500,7 +500,7 @@ if (
 #---------------------#
 
 data_per_continent_pred <-
-    purrr::map_2dfr(
+    purrr::map2_dfr(
         .x = vars_table$var_name, # [config]
         .y = vars_table$sel_data, # [config]
         .f = ~ {
@@ -704,12 +704,12 @@ data_for_plotting <-
     dplyr::bind_rows(
         data_per_seq_pred_restruct %>%
             dplyr::mutate(
-                grain = "seq",
+                grain = "sequence",
                 var_type = "var"
             ),
         data_per_ecozone_pred_restruct %>%
             dplyr::mutate(
-                grain = "ecozone",
+                grain = "climate-zone",
                 var_type = "var"
             ),
         data_per_continent_pred_restruct %>%
@@ -719,12 +719,12 @@ data_for_plotting <-
             ),
         data_density_per_seq_restruct %>%
             dplyr::mutate(
-                grain = "seq",
+                grain = "sequence",
                 var_type = "density"
             ),
         data_density_per_ecozone_restruct %>%
             dplyr::mutate(
-                grain = "ecozone",
+                grain = "climate-zone",
                 var_type = "density"
             ),
         data_density_per_continent_restruct %>%
@@ -738,7 +738,7 @@ readr::write_rds(
     data_for_plotting,
     file = here::here(
         "Data/Processed/Data_for_temporal_plotting/",
-        "Data_for_temporal_plotting-2022-09-22.rds"
+        "Data_for_temporal_plotting-2022-10-03.rds"
     ),
     compress = "gz"
 )
