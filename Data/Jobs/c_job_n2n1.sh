@@ -1,7 +1,7 @@
 #!/bin/tcsh
-#SBATCH -J continental_model # (job name)
-#SBATCH -o continental_model.%j.out # (name of the job output file, %j expands to the job name)
-#SBATCH -N 50 # (Number of requested nodes)
+#SBATCH -J c_n2n1 # (job name)
+#SBATCH -o c_n2n1.%j.out # (name of the job output file, %j expands to the job name)
+#SBATCH -N 10 # (Number of requested nodes)
 #SBATCH --ntasks-per-node 32 # (Number of requested cores per node)
 #SBATCH -t 24:00:00 # (Requested wall time)
 
@@ -26,6 +26,8 @@ package_list <-
 
 # load all packages
 sapply(package_list, library, character.only = TRUE)
+
+message("load function")
 
 add_age_bin <-
     function(data_source,
@@ -98,7 +100,10 @@ vars_table <-
         )
     )
 
+
 max_temporal_k <- 24
+
+message("load data")
 
 # Load the data
 data_all_estimates <-
@@ -107,6 +112,8 @@ data_all_estimates <-
             "Data/Input/Data_for_analyses-2022-09-29.rds"
         )
     )
+
+print(dim(data_all_estimates))
 
 # diversity estimates
 data_diversity <-
@@ -124,6 +131,8 @@ data_diversity <-
         dcca_axis_1 = ifelse(dcca_axis_1 < 0, 0, dcca_axis_1)
     )
 
+print(dim(data_diversity))
+
 # RoC estimates
 data_roc <-
     data_all_estimates %>%
@@ -139,50 +148,44 @@ data_roc <-
     ) %>%
     dplyr::filter(BIN >= 0)
 
-# fit the model
-purrr::pwalk(
-    .l = list(
-        vars_table[, "var_name", drop = TRUE], # [config] # ..1
-        vars_table[, "sel_error", drop = TRUE], # [config] # ..2
-        vars_table[, "sel_data", drop = TRUE] # [config] # ..3
+print(dim(data_roc))
+
+message("fitting model")
+
+var_n <- 5
+
+var_sel <- vars_table[var_n, "var_name", drop = TRUE]
+error_sel <- vars_table[var_n, "sel_error", drop = TRUE]
+data_sel <- vars_table[var_n, "sel_data", drop = TRUE]
+
+# Fit GAM model
+data_mod <-
+    REcopol::fit_hgam(
+        x_var = "age",
+        y_var = var_sel,
+        group_var = "dataset_id",
+        smooth_basis = "tp",
+        data_source = get(data_sel),
+        error_family = error_sel,
+        sel_k = max_temporal_k, # [config]
+        common_trend = TRUE,
+        use_parallel = TRUE,
+        max_itiration = 200
+    )
+
+message("saving model")
+
+readr::write_rds(
+    x = data_mod,
+    file = paste0(
+        here::here(
+            "Data/Output"
+        ),
+        "/",
+        var_sel,
+        ".rds"
     ),
-    .f = ~ {
-        var_sel <- ..1
-        error_sel <- ..2
-        data_sel <- ..3
-
-        message(
-            paste("fitting", var_sel)
-        )
-
-        # Fit GAM model
-        data_mod <-
-            REcopol::fit_hgam(
-                x_var = "age",
-                y_var = var_sel,
-                group_var = "dataset_id",
-                smooth_basis = "tp",
-                data_source = get(data_sel),
-                error_family = error_sel,
-                sel_k = max_temporal_k, # [config]
-                common_trend = TRUE,
-                use_parallel = TRUE,
-                max_itiration = 200
-            )
-
-        readr::write_rds(
-            x = data_mod,
-            file = paste0(
-                here::here(
-                    "Data/Output"
-                ),
-                "/",
-                var_sel,
-                ".rds"
-            ),
-            compress = "gz"
-        )
-    }
+    compress = "gz"
 )
 
 q()
