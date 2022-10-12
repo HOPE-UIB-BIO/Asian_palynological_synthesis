@@ -399,7 +399,7 @@ data_per_ecozone_pred <-
                                     dplyr::mutate(
                                         dataset_id = sel_data$dataset_id[1]
                                     ),
-                                exclude = data_mod[[sel_ecozone]] %>%
+                                exclude_var = data_mod[[sel_ecozone]] %>%
                                     gratia::smooths() %>%
                                     stringr::str_subset(., "dataset_id")
                             ) %>%
@@ -532,7 +532,7 @@ data_per_continent_pred <-
                         dplyr::mutate(
                             dataset_id = sel_data$dataset_id[1]
                         ),
-                    exclude = data_mod %>%
+                    exclude_var = data_mod %>%
                         gratia::smooths() %>%
                         stringr::str_subset(., "dataset_id")
                 ) %>%
