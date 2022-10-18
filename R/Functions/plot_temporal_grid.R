@@ -8,10 +8,13 @@ plot_temporal_grid <-
                  "continent"
              ),
              use_limits = TRUE,
+             use_trans = TRUE,
+             auto_y_breaks = FALSE,
+             n_y_ticks = 3,
              plot_rmse = TRUE,
              plot_summary = TRUE,
              def_color,
-             def_of_colo,
+             def_of_color,
              def_violin_color,
              def_text_size,
              heading_text_multiplier = 1.5) {
@@ -88,6 +91,16 @@ plot_temporal_grid <-
                 )
         }
 
+        if (
+            use_trans == FALSE
+        ) {
+            data_source <-
+                data_source %>%
+                dplyr::mutate(
+                    sel_trans = "identity"
+                )
+        }
+
         rows_names <-
             sel_vars
 
@@ -110,6 +123,9 @@ plot_temporal_grid <-
             ) %>%
             dplyr::filter(
                 grain %in% sel_grain
+            ) %>%
+            dplyr::mutate(
+                breaks = ifelse(auto_y_breaks == TRUE, "auto", breaks)
             )
 
         data_with_indiv_plots <-
@@ -121,7 +137,9 @@ plot_temporal_grid <-
                         merge_data, # ..2
                         grain, # ..3
                         var_type, # ..4
-                        y_limits # ..5
+                        y_limits, # ..5
+                        sel_trans, # ..6
+                        breaks # ..7
                     ),
                     .f = ~ plot_temporal_trend(
                         data_source = ..2,
@@ -129,10 +147,13 @@ plot_temporal_grid <-
                         sel_grain = ..3,
                         sel_type = ..4,
                         y_limits = ..5,
+                        sel_trans = ..6,
+                        y_ticks = ..7,
+                        n_y_ticks = n_y_ticks,
                         plot_rmse = plot_rmse,
                         plot_summary = plot_summary,
                         def_color = def_color,
-                        def_of_colo = def_of_colo,
+                        def_of_color = def_of_color,
                         def_violin_color = def_violin_color,
                         def_text_size = def_text_size
                     )
@@ -264,6 +285,6 @@ plot_temporal_grid <-
                     data_fig_all
                 )
             )
-        
+
         return(fin)
     }

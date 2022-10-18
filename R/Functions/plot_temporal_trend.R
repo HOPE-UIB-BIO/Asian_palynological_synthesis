@@ -4,6 +4,9 @@ plot_temporal_trend <-
              sel_grain = c("sequence", "climate-zone", "continent"),
              sel_type = c("var", "density"),
              y_limits,
+             sel_trans = "idenity",
+             y_ticks = NULL,
+             n_y_ticks = 3,
              plot_rmse = TRUE,
              plot_summary = TRUE,
              def_color,
@@ -62,6 +65,17 @@ plot_temporal_trend <-
             }
         }
 
+        if (
+            y_ticks == "auto" | missing(y_ticks)
+        ) {
+            y_ticks <-
+                seq(
+                    from = min(y_limits),
+                    to = max(y_limits),
+                    length.out = n_y_ticks
+                )
+        }
+
         # create a common visualisatin style for all figures
         p0 <-
             data_source %>%
@@ -82,7 +96,9 @@ plot_temporal_trend <-
             ) +
             ggplot2::scale_y_continuous(
                 limits = y_limits,
-                n.breaks = 3
+                breaks =  y_ticks,
+                trans = sel_trans,
+                labels = scales::label_number(accuracy = 0.1)
             ) +
             ggplot2::theme(
                 strip.text.x = ggplot2::element_text(
