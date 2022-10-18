@@ -509,16 +509,31 @@ data_per_continent_pred <-
 
             message(var_sel)
 
+            file_name <-
+                paste0(
+                    here::here(
+                        "Data/Processed/Models/Per_continent/"
+                    ),
+                    "/",
+                    var_sel,
+                    ".rds"
+                )
+
+            if (
+                file.exists(file_name) == FALSE
+            ) {
+                message(
+                    "Model not detected"
+                )
+
+                return(
+                    tibble::tibble()
+                )
+            }
+
             data_mod <-
                 readr::read_rds(
-                    file = paste0(
-                        here::here(
-                            "Data/Processed/Models/Per_continent/"
-                        ),
-                        "/",
-                        var_sel,
-                        ".rds"
-                    )
+                    file = file_name
                 )
 
             sel_data <-
@@ -557,7 +572,9 @@ data_per_continent_pred_restruct <-
         )
     ) %>%
     tidyr::pivot_longer(
-        cols = vars_table$var_name, # [config]
+        cols = dplyr::any_of(
+            vars_table$var_name # [config]
+        ),
         names_to = "var_name",
         values_to = "var"
     ) %>%
