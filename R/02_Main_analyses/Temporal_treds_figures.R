@@ -88,13 +88,16 @@ fig_all_grid <-
     plot_temporal_grid(
         data_source = data_for_plotting_with_limits,
         sel_vars = sel_var_vec,
+        sel_var_type = c("var", "density"),
+        sel_grain = c("sequence", "climate-zone", "continent"),
         use_limits = TRUE,
         plot_rmse = TRUE,
         plot_summary = FALSE,
         def_color = "#2CA388",
         def_of_colo = "#A3882C",
         def_violin_color = "#882CA3",
-        def_text_size = 16
+        def_text_size = 16,
+        heading_text_multiplier = 2
     )
 
 
