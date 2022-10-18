@@ -1,13 +1,20 @@
 plot_temporal_grid <-
     function(data_source,
              sel_vars,
+             sel_var_type = c("var", "density"),
+             sel_grain = c(
+                 "sequence",
+                 "climate-zone",
+                 "continent"
+             ),
              use_limits = TRUE,
              plot_rmse = TRUE,
              plot_summary = TRUE,
              def_color,
              def_of_colo,
              def_violin_color,
-             def_text_size) {
+             def_text_size,
+             heading_text_multiplier = 1.5) {
 
         # helper function to order grobs to grid
         draw_grid <-
@@ -81,8 +88,32 @@ plot_temporal_grid <-
                 )
         }
 
-        data_with_indiv_plots <-
+        rows_names <-
+            sel_vars
+
+        n_rows <-
+            length(rows_names)
+
+        cols_names <-
+            sel_grain
+
+        n_cols <-
+            length(cols_names) * length(sel_var_type)
+
+        data_sub <-
             data_source %>%
+            dplyr::filter(
+                var_name %in% sel_vars
+            ) %>%
+            dplyr::filter(
+                var_type %in% sel_var_type
+            ) %>%
+            dplyr::filter(
+                grain %in% sel_grain
+            )
+
+        data_with_indiv_plots <-
+            data_sub %>%
             dplyr::mutate(
                 ifigure = purrr::pmap(
                     .l = list(
@@ -108,74 +139,30 @@ plot_temporal_grid <-
                 )
             )
 
-        rows_names <-
-            sel_vars
-
-        n_rows <-
-            length(rows_names)
-
-        cols_names <-
-            data_with_indiv_plots %>%
-            dplyr::distinct(grain, var_type) %>%
-            purrr::pluck("grain")
-
-        n_cols <-
-            length(cols_names)
-
-        data_sub <-
-            data_with_indiv_plots %>%
-            dplyr::filter(
-                var_name %in% sel_vars
-            ) %>%
-            dplyr::mutate(
-                var_name = factor(var_name, levels = sel_vars)
-            )
-
         # create all possible combination
         dummy_table <-
-            data_sub %>%
+            data_with_indiv_plots %>%
             dplyr::select(
                 var_name, grain, var_type
             ) %>%
             dplyr::mutate(
-                grain = factor(
-                    grain,
-                    levels = c(
-                        "sequence",
-                        "climate-zone",
-                        "continent"
-                    )
-                ),
-                var_type = factor(
-                    var_type,
-                    levels = c(
-                        "var",
-                        "density"
-                    )
-                )
-            ) %>%
-            tidyr::expand(
-                var_name, grain, var_type
-            ) %>%
-            dplyr::mutate(
-                name_merge = paste(grain, var_type, sep = "-")
-            ) %>%
-            dplyr::mutate(
-                order = dplyr::case_when(
-                    name_merge == "sequence-var" ~ 1,
-                    name_merge == "climate-zone-var" ~ 2,
-                    name_merge == "continent-var" ~ 3,
-                    name_merge == "sequence-density" ~ 4,
-                    name_merge == "climate-zone-density" ~ 5,
-                    name_merge == "continent-density" ~ 6,
-                    TRUE ~ 7
-                ),
                 var_name = factor(
                     var_name,
                     levels = sel_vars
+                ),
+                grain = factor(
+                    grain,
+                    levels = sel_grain
+                ),
+                var_type = factor(
+                    var_type,
+                    levels = sel_var_type
                 )
             ) %>%
-            dplyr::arrange(var_name, order)
+            tidyr::expand(
+                var_name, var_type, grain
+            ) %>%
+            dplyr::arrange(var_name, var_type, grain)
 
         # create an empty plot
         dummy_plot <-
@@ -189,36 +176,38 @@ plot_temporal_grid <-
         # use dummy table to have all posible figures,
         #   replace the missing figures with empty
         #   transform all plos to Grobs
-        data_with_indiv_plots_full <-
-            dplyr::left_join(
-                dummy_table,
-                data_sub,
-                by = c("var_name", "grain", "var_type")
-            ) %>%
-            dplyr::mutate(
-                has_a_plot = purrr::map_lgl(
-                    .x = ifigure,
-                    .f = ~ !is.null(.x)
-                ),
-                ifigure_grob = purrr::map2(
-                    .x = ifigure,
-                    .y = has_a_plot,
-                    .f = ~ {
-                        if (
-                            .y == TRUE
-                        ) {
-                            no_axis <-
-                                .x +
-                                ggpubr::rremove("xylab")
+        suppressWarnings(
+            data_with_indiv_plots_full <-
+                dummy_table %>%
+                dplyr::left_join(
+                    data_with_indiv_plots,
+                    by = c("var_name", "var_type", "grain")
+                ) %>%
+                dplyr::mutate(
+                    has_a_plot = purrr::map_lgl(
+                        .x = ifigure,
+                        .f = ~ !is.null(.x)
+                    ),
+                    ifigure_grob = purrr::map2(
+                        .x = ifigure,
+                        .y = has_a_plot,
+                        .f = ~ {
+                            if (
+                                .y == TRUE
+                            ) {
+                                no_axis <-
+                                    .x +
+                                    ggpubr::rremove("xylab")
 
-                            ggplot2::ggplotGrob(no_axis) %>%
-                                return()
-                        } else {
-                            return(dummy_plot_grob)
+                                ggplot2::ggplotGrob(no_axis) %>%
+                                    return()
+                            } else {
+                                return(dummy_plot_grob)
+                            }
                         }
-                    }
+                    )
                 )
-            )
+        )
 
         data_fig_all <-
             data_with_indiv_plots_full %>%
@@ -234,7 +223,10 @@ plot_temporal_grid <-
             purrr::map(
                 .f = ~ {
                     sel_plot <-
-                        plot_name(.x, sel_size = def_text_size * 1.5)
+                        plot_name(
+                            var_name = .x,
+                            sel_size = def_text_size * heading_text_multiplier
+                        )
                     plot_grob <-
                         ggplot2::ggplotGrob(sel_plot) %>%
                         return()
@@ -244,7 +236,7 @@ plot_temporal_grid <-
         cols_names_fig_list_full <-
             c(
                 list(dummy_plot_grob),
-                cols_names_grob_list
+                rep(cols_names_grob_list, length(sel_var_type))
             ) %>%
             Reduce(cbind, .)
 
@@ -253,14 +245,16 @@ plot_temporal_grid <-
             purrr::map(
                 .f = ~ {
                     sel_plot <-
-                        plot_name(.x, sel_size = def_text_size * 1.5)
+                        plot_name(
+                            var_name = .x,
+                            sel_size = def_text_size * heading_text_multiplier
+                        )
                     plot_grob <-
                         ggplot2::ggplotGrob(sel_plot) %>%
                         return()
                 }
             ) %>%
             Reduce(rbind, .)
-
 
         fin <-
             rbind(
@@ -270,5 +264,6 @@ plot_temporal_grid <-
                     data_fig_all
                 )
             )
+        
         return(fin)
     }
