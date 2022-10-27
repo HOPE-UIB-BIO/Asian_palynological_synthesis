@@ -35,7 +35,7 @@ data_for_plotting <-
     readr::read_rds(
         file = here::here(
             "Data/Processed/Data_for_temporal_plotting",
-            "Data_for_temporal_plotting-2022-10-18.rds"
+            "Data_for_temporal_plotting-2022-10-27.rds"
         )
     )
 
@@ -110,7 +110,9 @@ sel_var_vec <-
         "MVRT"
     )
 
-fig_all_grid <-
+# - 3.1 full grid with rescale Y-axis -----
+
+fig_grid_all_rescale <-
     plot_temporal_grid(
         data_source = data_for_plotting_with_limits,
         sel_vars = sel_var_vec,
@@ -129,33 +131,234 @@ fig_all_grid <-
         heading_text_multiplier = 2
     )
 
-
 # View results
 grid::grid.newpage()
-grid::grid.draw(fig_all_grid)
+grid::grid.draw(fig_grid_all_rescale)
 
-
-#--------------------------------------------------------#
-# 4. Save ----
-#--------------------------------------------------------#
-
+# save results
 c(
     "tiff",
      "pdf"
 ) %>%
     purrr::walk(
         .f = ~ ggplot2::ggsave(
-            plot = fig_all_grid,
+            plot = fig_grid_all_rescale,
             filename =
                 paste0(
                     here::here(
-                        "Outputs/Figures/Temporal_trends_wip"
+                        "Outputs/Figures/Temporal_trends_full_rescale"
                     ),
                     ".",
                     .x
                 ),
             # 2 types , 3 grains, +1 is for label
             width = ((2 * 3) + 1) * set_fig_width,
+            # +1 is for label
+            height = (length(sel_var_vec) + 1) * set_fig_height,
+            units = "cm",
+            dpi = 400,
+            compress = "lzw"
+        )
+    )
+
+# - 3.2 full grid with free Y-axis -----
+
+fig_grid_all_free_y <-
+    plot_temporal_grid(
+        data_source = data_for_plotting_with_limits,
+        sel_vars = sel_var_vec,
+        sel_var_type = c("var", "density"),
+        sel_grain = c("sequence", "climate-zone", "continent"),
+        use_limits = FALSE,
+        auto_y_breaks = TRUE,
+        n_y_ticks = 3,
+        use_trans = FALSE,
+        plot_rmse = TRUE,
+        plot_summary = FALSE,
+        def_color = "#2CA388",
+        def_of_color = "#A3882C",
+        def_violin_color = "#882CA3",
+        def_text_size = 16,
+        heading_text_multiplier = 2
+    )
+
+# View results
+grid::grid.newpage()
+grid::grid.draw(fig_grid_all_free_y)
+
+# save results
+c(
+    "tiff",
+     "pdf"
+) %>%
+    purrr::walk(
+        .f = ~ ggplot2::ggsave(
+            plot = fig_grid_all_free_y,
+            filename =
+                paste0(
+                    here::here(
+                        "Outputs/Figures/Temporal_trends_full_free_y"
+                    ),
+                    ".",
+                    .x
+                ),
+            # 2 types , 3 grains, +1 is for label
+            width = ((2 * 3) + 1) * set_fig_width,
+            # +1 is for label
+            height = (length(sel_var_vec) + 1) * set_fig_height,
+            units = "cm",
+            dpi = 400,
+            compress = "lzw"
+        )
+    )
+
+
+# - 3.3 only var with rescale Y-axis -----
+
+fig_grid_var_rescale <-
+    plot_temporal_grid(
+        data_source = data_for_plotting_with_limits,
+        sel_vars = sel_var_vec,
+        sel_var_type = "var",
+        sel_grain = c("sequence", "climate-zone", "continent"),
+        use_limits = TRUE,
+        auto_y_breaks = TRUE,
+        n_y_ticks = 3,
+        use_trans = FALSE,
+        plot_rmse = TRUE,
+        plot_summary = FALSE,
+        def_color = "#2CA388",
+        def_of_color = "#A3882C",
+        def_violin_color = "#882CA3",
+        def_text_size = 16,
+        heading_text_multiplier = 2
+    )
+
+# View results
+grid::grid.newpage()
+grid::grid.draw(fig_grid_var_rescale)
+
+# save results
+c(
+    "tiff",
+     "pdf"
+) %>%
+    purrr::walk(
+        .f = ~ ggplot2::ggsave(
+            plot = fig_grid_var_rescale,
+            filename =
+                paste0(
+                    here::here(
+                        "Outputs/Figures/Temporal_trends_var_rescale"
+                    ),
+                    ".",
+                    .x
+                ),
+            # 3 grains, +1 is for label
+            width = (3 + 1) * set_fig_width,
+            # +1 is for label
+            height = (length(sel_var_vec) + 1) * set_fig_height,
+            units = "cm",
+            dpi = 400,
+            compress = "lzw"
+        )
+    )
+
+
+# - 3.4 only var with free Y-axis -----
+
+fig_grid_var_free_y <-
+    plot_temporal_grid(
+        data_source = data_for_plotting_with_limits,
+        sel_vars = sel_var_vec,
+        sel_var_type = "var",
+        sel_grain = c("sequence", "climate-zone", "continent"),
+        use_limits = FALSE,
+        auto_y_breaks = TRUE,
+        n_y_ticks = 3,
+        use_trans = FALSE,
+        plot_rmse = TRUE,
+        plot_summary = FALSE,
+        def_color = "#2CA388",
+        def_of_color = "#A3882C",
+        def_violin_color = "#882CA3",
+        def_text_size = 16,
+        heading_text_multiplier = 2
+    )
+
+# View results
+grid::grid.newpage()
+grid::grid.draw(fig_grid_var_free_y)
+
+# save results
+c(
+    "tiff",
+     "pdf"
+) %>%
+    purrr::walk(
+        .f = ~ ggplot2::ggsave(
+            plot = fig_grid_var_free_y,
+            filename =
+                paste0(
+                    here::here(
+                        "Outputs/Figures/Temporal_trends_var_free_y"
+                    ),
+                    ".",
+                    .x
+                ),
+            # 3 grains, +1 is for label
+            width = (3 + 1) * set_fig_width,
+            # +1 is for label
+            height = (length(sel_var_vec) + 1) * set_fig_height,
+            units = "cm",
+            dpi = 400,
+            compress = "lzw"
+        )
+    )
+
+# - 3.5 only density with rescale Y-axis -----
+
+fig_grid_density <-
+    plot_temporal_grid(
+        data_source = data_for_plotting_with_limits,
+        sel_vars = sel_var_vec,
+        sel_var_type = "density",
+        sel_grain = c("sequence", "climate-zone", "continent"),
+        use_limits = FALSE,
+        auto_y_breaks = TRUE,
+        n_y_ticks = 3,
+        use_trans = FALSE,
+        plot_rmse = TRUE,
+        plot_summary = FALSE,
+        def_color = "#2CA388",
+        def_of_color = "#A3882C",
+        def_violin_color = "#882CA3",
+        def_text_size = 16,
+        heading_text_multiplier = 2
+    )
+
+# View results
+grid::grid.newpage()
+grid::grid.draw(fig_grid_density)
+
+# save results
+c(
+    "tiff",
+     "pdf"
+) %>%
+    purrr::walk(
+        .f = ~ ggplot2::ggsave(
+            plot = fig_grid_density,
+            filename =
+                paste0(
+                    here::here(
+                        "Outputs/Figures/Temporal_trends_density"
+                    ),
+                    ".",
+                    .x
+                ),
+            # 3 grains, +1 is for label
+            width = (3 + 1) * set_fig_width,
             # +1 is for label
             height = (length(sel_var_vec) + 1) * set_fig_height,
             units = "cm",
