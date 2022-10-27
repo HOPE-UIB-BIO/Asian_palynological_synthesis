@@ -41,7 +41,11 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
+# models
+Data/Processed/Models/
+
 # Private data
 R/01_Data_processing/_prepare_data.R
 Data/Input/Pollen_processed/Data_processed_2022-08-30.rds
 Data/Input/Pollen_processed/Asia_HOPE_fulldata_filtered_2021-10-04.rds
+

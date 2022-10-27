@@ -15,7 +15,6 @@ rename_variable_names <-
                     var_name == "dcca_axis_1" ~ "DCCA1",
                     var_name == "dcca" ~ "DCCA1",
                     var_name == "dca_axis_1" ~ "DCA1",
-                    var_name == "dca" ~ "DCA1",
                     var_name == "mvrt" ~ "MVRT",
                     TRUE ~ var_name
                 )
@@ -24,7 +23,6 @@ rename_variable_names <-
                 var_name = factor(var_name,
                     levels = c(
                         "DCCA1",
-                        "DCA1",
                         "MVRT",
                         "N0",
                         "N1",
