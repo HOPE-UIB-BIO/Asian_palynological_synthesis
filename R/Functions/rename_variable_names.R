@@ -23,7 +23,7 @@ rename_variable_names <-
                 var_name = factor(var_name,
                     levels = c(
                         "DCCA1",
-                        "MVRT",
+                        "MRT",
                         "N0",
                         "N1",
                         "N2",
