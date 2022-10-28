@@ -35,7 +35,7 @@ data_for_plotting <-
     readr::read_rds(
         file = here::here(
             "Data/Processed/Data_for_temporal_plotting",
-            "Data_for_temporal_plotting-2022-10-27.rds"
+            "Data_for_temporal_plotting-2022-10-28.rds"
         )
     )
 
@@ -107,7 +107,7 @@ sel_var_vec <-
         "N2 divided by N1",
         "DCCA1",
         "RoC",
-        "MVRT"
+        "MRT"
     )
 
 # - 3.1 full grid with rescale Y-axis -----

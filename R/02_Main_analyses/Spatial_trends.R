@@ -32,7 +32,7 @@ source(
 data_spatial_trends <-
     readr::read_rds(
         here::here(
-            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-19.rds"
+            "Data/Processed/Data_for_analyses/Data_for_analyses-2022-09-29.rds"
         )
     ) %>%
     dplyr::select(
@@ -40,7 +40,6 @@ data_spatial_trends <-
         long, lat,
         Climate_zone,
         dcca_grad_length,
-        dca_grad_length,
         mvrt_groups_n
     )
 
@@ -63,7 +62,7 @@ koppen_tranlation_table <-
 #--------------------------------------------------------#
 
 #--------------------------------------------------------#
-# A. Base map with 5 modified Köppen-Geiger climate zones (in Beck et al. 2018) ----
+# 4. Base map with Köppen-Geiger climate zones (in Beck et al. 2018) ----
 #--------------------------------------------------------#
 
 # Extract the required raster points
@@ -184,7 +183,7 @@ base_map_seq_hist <-
     )
 
 #--------------------------------------------------------#
-# C. turnover ----
+# 5. turnover ----
 #--------------------------------------------------------#
 
 plot_dcca <-
@@ -196,34 +195,29 @@ plot_dcca <-
         error_family = "mgcv::Tweedie(p = 1.1, link = 'log')"
     )
 
-ggplot2::ggsave(
-    filename = here::here("Outputs/Figures/Spatial_DCCA.tiff"),
-    plot = plot_dcca,
-    dpi = 400,
-    width = 15,
-    height = 15,
-    units = "cm",
-    compress = "lzw"
-)
-
-plot_dca <-
-    plot_spatial_dist(
-        data_source = data_spatial_trends,
-        base_map = base_map_seq_hist,
-        var_name = "dca_grad_length",
-        lab_name = "DCA gradient length",
-        error_family = "mgcv::Tweedie(p = 1.1, link = 'log')"
+# save results
+c(
+    "tiff",
+    "pdf"
+) %>%
+    purrr::walk(
+        .f = ~ ggplot2::ggsave(
+            plot = plot_dcca,
+            filename =
+                paste0(
+                    here::here(
+                        "Outputs/Figures/Spatial_DCCA"
+                    ),
+                    ".",
+                    .x
+                ),
+            dpi = 400,
+            width = 15,
+            height = 15,
+            units = "cm",
+            compress = "lzw"
+        )
     )
-
-ggplot2::ggsave(
-    filename = here::here("Outputs/Figures/Spatial_DCA.tiff"),
-    plot = plot_dca,
-    dpi = 400,
-    width = 15,
-    height = 15,
-    units = "cm",
-    compress = "lzw"
-)
 
 #--------------------------------------------------------#
 # D.  MVRT partitions
@@ -238,18 +232,33 @@ plot_mrt <-
         error_family = "stats::poisson(link = 'log')"
     )
 
-ggplot2::ggsave(
-    filename = here::here("Outputs/Figures/Spatial_MRT.tiff"),
-    plot = plot_mrt,
-    dpi = 400,
-    width = 15,
-    height = 15,
-    units = "cm",
-    compress = "lzw"
-)
+# save results
+c(
+    "tiff",
+    "pdf"
+) %>%
+    purrr::walk(
+        .f = ~ ggplot2::ggsave(
+            plot = plot_mrt,
+            filename =
+                paste0(
+                    here::here(
+                        "Outputs/Figures/Spatial_MRT"
+                    ),
+                    ".",
+                    .x
+                ),
+            dpi = 400,
+            width = 15,
+            height = 15,
+            units = "cm",
+            compress = "lzw"
+        )
+    )
+
 
 #--------------------------------------------------------#
-# E.Sequences per ecozone ----
+# 6.Sequences per ecozone ----
 #--------------------------------------------------------#
 
 plot_ecozone_counts <-
@@ -294,12 +303,27 @@ plot_ecozone_counts <-
         legend.position = c(0.75, 0.75)
     )
 
-ggplot2::ggsave(
-    filename = here::here("Outputs/Figures/Ecozone_counts.tiff"),
-    plot = plot_ecozone_counts,
-    dpi = 400,
-    width = 15,
-    height = 15,
-    units = "cm",
-    compress = "lzw"
-)
+# save results
+c(
+    "tiff",
+    "pdf"
+) %>%
+    purrr::walk(
+        .f = ~ ggplot2::ggsave(
+            plot = plot_ecozone_counts,
+            filename =
+                paste0(
+                    here::here(
+                        "Outputs/Figures/Ecozone_counts"
+                    ),
+                    ".",
+                    .x
+                ),
+            dpi = 400,
+            width = 15,
+            height = 15,
+            units = "cm",
+            compress = "lzw"
+        )
+    )
+
