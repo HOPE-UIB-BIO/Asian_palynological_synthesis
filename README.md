@@ -15,6 +15,4 @@ Data properties (e.g., spatial distribution of the records, distribution of samp
 1. Clone the repo.
 2. Run the script for initial project setup "___Init_project___.R"
 3. Make sure that you can source the configuration file "00_Config_file.R" without any error message. You need to load this config file before running each R script.
-4. Install required packges outside (independent of) the "00_Config_file.R", if required to run (source) the config file without any error. Please do not forget to install "REcopol" package for estimating the pollen-assemblage properties: 
-### install.packages("devtools")
-### devtools::install_github("HOPE-UIB-BIO/REcopol")
+4. Install required packges outside (independent of) the "00_Config_file.R", if required to run (source) the config file without any error. Please do not forget to install "REcopol" package for estimating the pollen-assemblage properties. To install "REcopol": install.packages("devtools"), then devtools::install_github("HOPE-UIB-BIO/REcopol")
