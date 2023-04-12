@@ -19,51 +19,26 @@
 # 1. Load packages -----
 #----------------------------------------------------------#
 
-if (!exists("update_repo_packages")) {
-  update_repo_packages <- TRUE
+if (
+  isFALSE(
+    exists("already_synch", envir = current_env)
+  )
+) {
+  already_synch <- FALSE
 }
 
-if (update_repo_packages == TRUE) {
+if (
+  isFALSE(already_synch)
+) {
+  library(here)
+  # Synchronise the package versions
+  renv::restore(
+    lockfile = here::here("renv/library_list.lock")
+  )
+  already_synch <- TRUE
 
-  # install RRatepol from github
-  if (!exists("already_installed_rratepol")) {
-    already_installed_rratepol <- FALSE
-  }
-
-  if (already_installed_rratepol == FALSE) {
-    devtools::install_github("HOPE-UIB-BIO/R-Ratepol-package",
-      quiet = FALSE,
-      upgrade = FALSE
-    )
-    already_installed_rratepol <- TRUE
-  }
-
-  # install REcopol from GitHub
-  if (!exists("already_installed_recopol")) {
-    already_installed_recopol <- FALSE
-  }
-
-  if (already_installed_recopol == FALSE) {
-    devtools::install_github("HOPE-UIB-BIO/R-Ecopol-package",
-      quiet = FALSE,
-      upgrade = FALSE
-    )
-    already_installed_recopol <- TRUE
-  }
-
-  if (!exists("already_synch")) {
-    already_synch <- FALSE
-  }
-
-  if (already_synch == FALSE) {
-    library(here)
-    # synchronise the package versions
-    renv::restore(lockfile = here::here("renv/library_list.lock"))
-    already_synch <- TRUE
-
-    # save snapshot of package versions
-    # renv::snapshot(lockfile =  "renv/library_list.lock")  # do only for update
-  }
+  # Save snapshot of package versions
+  # renv::snapshot(lockfile =  "renv/library_list.lock")  # do only for update
 }
 
 # define packages
