@@ -36,7 +36,7 @@ Different sections (folders) of the R project are as follows:
 3.5 Subfolder `R/02_Main_analyses` contains R scripts used for the analyses of the spatio-temporal patterns of the PAPs.
 3.6 Subfolder `R/03_Supplementary_analyses` contains R scripts used for the analyses that are used as supplementary material in the paper.
 
-4. `renv/`: This folder stores stores all the installed packages with the record of their versions.
+4. `renv/`: This folder stores all the installed packages with the record of their versions.
 
 ## How to use the repo?
 Once a user obtains the R project, there are several steps to be done before using it:
@@ -45,5 +45,5 @@ Once a user obtains the R project, there are several steps to be done before usi
 
 - Execute all individual steps with the `___Init_project___.R` script. This will result in the preparation of all R-packages using the [`{renv}` package](https://rstudio.github.io/renv/articles/renv.html), which is an R dependency management of your projects. Mainly it will install a crucial R-package [`{REcopol}`](https://github.com/HOPE-UIB-BIO/R-Ecopol-package) and and all its dependencies. The latest release of {REcopol} is automatically installed in the project set-up stage. Note that installing all packages can take a substantial amount of time.
 
-- Run the `00_Config_file.R` at the beginning of running the R scripts so that the project configuration, reguired packages, and functions are loaded properly.
+- Run the `00_Config_file.R` at the beginning of running the R scripts so that the project configuration, required packages, and functions are loaded properly.
 
