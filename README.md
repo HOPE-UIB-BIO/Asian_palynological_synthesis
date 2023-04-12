@@ -23,8 +23,8 @@ Data properties (e.g., spatial distribution of the records, distribution of samp
 
 "Asian_palynological_synthesis" ('R project' from here on) is accessible in two ways:
 
-1. If a user has a [GitHub account](https://github.com/), the easiest way is to create your own GitHub repo using this Github link (<https://github.com/HOPE-UIB-BIO/Asian_palynological_synthesis>).
-2. A user can download the latest *Release* of the R project as a zip file from the Asian_palynological_synthesis Release page (<https://github.com/HOPE-UIB-BIO/Asian_palynological_synthesis/releases>).
+1. If a user has a [GitHub account](https://github.com/), the easiest way is to create your own GitHub repo using this [Github link](<https://github.com/HOPE-UIB-BIO/Asian_palynological_synthesis>).
+2. A user can download the latest *Release* of the R project as a zip file from the Asian_palynological_synthesis [Release page](<https://github.com/HOPE-UIB-BIO/Asian_palynological_synthesis/releases>).
 
 Different sections (folders) of the R project are as follows:
 
